@@ -54,6 +54,9 @@ class HttpBridge(
 
     fun start(): Boolean {
         if (running.get()) return true
+        // Materialise the token now, not on the first request: the value the app
+        // shows the user must be the value in force from the moment it listens.
+        runCatching { config.token }
         return runCatching {
             val socket = ServerSocket(config.port, 16, null)
             serverSocket = socket
