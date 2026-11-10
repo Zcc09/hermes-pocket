@@ -197,13 +197,16 @@ export POCKET_TOKEN=the-token-from-the-app
 Then:
 
 ```bash
-python tools/pocket.py status              # reachable? which tier?
-python tools/pocket.py shell id            # uid=0(root) means root tier
-python tools/pocket.py shot -o screen.png  # screenshot to a file
-python tools/pocket.py tap 540 1200        # tap that point on the screen
+python tools/pocket.py status                 # reachable? which tier?
+python tools/pocket.py shell id               # uid=0(root) means root tier
+python tools/pocket.py shot --out screen.png  # screenshot to a file (default ./screenshot.png)
+python tools/pocket.py ui                     # the UI tree, with bounds to tap
+python tools/pocket.py tap 540 1200           # tap that point on the screen
 ```
 
-Run `python tools/pocket.py --help` for the full command list.
+`--url` and `--token` override the environment per call. `--json` prints the bridge's
+raw JSON for the read and action commands; `shot` writes bytes, so it takes `--out`
+and `--max <width>` instead. Run `python tools/pocket.py --help` for the full list.
 
 The agent on your computer has to be on the same network as the phone. A
 Hermes instance running on a server elsewhere, or on a VPN that does not route
