@@ -162,8 +162,19 @@ for i in $(seq 1 10); do
 done
 [ "$up" -eq 1 ] && pass "bridge answers on :$HOST_PORT" || fail "bridge never answered on :$HOST_PORT"
 
-TOKEN=$(adb_ shell run-as "$PKG" cat shared_prefs/hermes-pocket-bridge.xml 2>/dev/null \
-        | tr -d '\r' | sed -n 's/.*<string name="token">\([0-9a-f]*\)<\/string>.*/\1/p' | head -1)
+echo "prefs dir: $(adb_ shell run-as "$PKG" ls shared_prefs 2>&1 | tr -d "\015")"
+PREFS=$(adb_ shell run-as "$PKG" cat shared_prefs/hermes-pocket-bridge.xml 2>/dev/null | tr -d "\015")
+if [ -z "$PREFS" ]; then
+  echo "WARN: run-as could not read the prefs; trying adb root"
+  timeout 60 adb root > /dev/null 2>&1 || true
+  sleep 3
+  PREFS=$(timeout 60 adb shell cat "/data/data/$PKG/shared_prefs/hermes-pocket-bridge.xml" 2>/dev/null | tr -d "\015")
+fi
+echo "prefs: $(echo "$PREFS" | head -c 300)"
+TOKEN=$(echo "$PREFS" | grep -o 'name="token">[0-9a-f]*' | sed 's/.*>//' | head -1)
+if [ -z "$TOKEN" ]; then
+  TOKEN=$(echo "$PREFS" | grep -oE '[0-9a-f]{32}' | head -1)
+fi
 if [ -n "$TOKEN" ]; then
   pass "bridge token read from the app's prefs (${#TOKEN} chars)"
 else
