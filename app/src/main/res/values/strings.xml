@@ -32,6 +32,7 @@
     <string name="bridge_a11y_off">Running as %1$s. Accessibility is off: taps, the UI tree and screenshots need it on a phone without root.</string>
     <string name="bridge_open_accessibility">Open accessibility settings</string>
     <string name="bridge_test">Test this phone</string>
+    <string name="bridge_probing">Checking what this phone allows…</string>
     <string name="bridge_new_token">New token</string>
     <string name="bridge_token_regenerated">New token generated. Update your agent, the old one no longer works.</string>
     <string name="bridge_guide">Full steps for root, Shizuku and app-only access are in docs/DEVICE-CONTROL.md in the app\'s repository.</string>

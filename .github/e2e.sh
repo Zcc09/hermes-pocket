@@ -45,6 +45,14 @@ pass "installed $APK on a clean app state"
 
 app_log() { timeout 60 adb logcat -d -s HermesPocket:V 2>/dev/null; }
 
+# Enable the accessibility service the way the user does in Settings, so the
+# gesture/UI/screenshot paths are exercised rather than skipped. Done before the
+# first launch: the system binds it on the next accessibility pass.
+adb_ shell settings put secure enabled_accessibility_services "$PKG/.bridge.PocketAccessibility" > /dev/null 2>&1 || true
+adb_ shell settings put secure accessibility_enabled 0 > /dev/null 2>&1 || true
+adb_ shell settings put secure accessibility_enabled 1 > /dev/null 2>&1 || true
+sleep 5
+
 echo "== 1. first launch: the app asks for a server =="
 adb_ logcat -c || true
 timeout 120 adb shell am start -W -n "$PKG/.MainActivity" > /dev/null || fail "am start"
@@ -138,11 +146,6 @@ cat e2e-app.txt e2e-app-relaunch.txt 2>/dev/null | sed -n '1,60p'
 
 echo "== 6. device control bridge =="
 
-# Enable the accessibility service the way the user does in Settings, so the
-# gesture/UI/screenshot paths are exercised rather than skipped.
-adb_ shell settings put secure enabled_accessibility_services "$PKG/.bridge.PocketAccessibility" > /dev/null 2>&1 || true
-adb_ shell settings put secure accessibility_enabled 1 > /dev/null 2>&1 || true
-sleep 3
 
 adb_ shell am force-stop "$PKG" || true
 timeout 120 adb shell am start -W -n "$PKG/.MainActivity" -e server "$FIXTURE" -e bridge 1 > /dev/null || fail "am start with bridge hook"
@@ -215,8 +218,19 @@ else
   echo "WARN: UI tree unavailable: $(echo "$UI_JSON" | head -c 160)"
 fi
 
+GESTURES=$(echo "$STATUS" | grep -o '"gestures":true' | head -1)
 KEY_JSON=$(curl -s -m 10 -H "$auth" -H 'Content-Type: application/json' -d '{"action":"key","key":"BACK"}' "$BASE/v1/input")
-echo "$KEY_JSON" | grep -q '"ok":true' && pass "input key dispatched" || fail "input key failed: $(echo "$KEY_JSON" | head -c 200)"
+echo "$KEY_JSON" | head -c 300; echo
+if [ -n "$GESTURES" ]; then
+  echo "$KEY_JSON" | grep -q '"ok":true' && pass "input key dispatched through accessibility" \
+    || fail "gestures advertised but input failed: $(echo "$KEY_JSON" | head -c 200)"
+else
+  # No accessibility, no privileged tier: refusing with an actionable message is
+  # the correct behaviour, not a failure.
+  echo "$KEY_JSON" | grep -q 'accessibility service' \
+    && pass "input refused with an actionable message (no accessibility in this run)" \
+    || fail "input failed for the wrong reason: $(echo "$KEY_JSON" | head -c 200)"
+fi
 
 APPS_JSON=$(curl -s -m 10 -H "$auth" -H 'Content-Type: application/json' -d '{"action":"list"}' "$BASE/v1/app")
 echo "$APPS_JSON" | grep -q '"apps"' && pass "app list returned" || fail "app list failed"

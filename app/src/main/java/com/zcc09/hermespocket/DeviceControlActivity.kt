@@ -43,6 +43,9 @@ class DeviceControlActivity : ComponentActivity() {
     private lateinit var token: TextView
     private lateinit var accessibilityState: TextView
     private lateinit var testResult: TextView
+    private val probeExecutor = java.util.concurrent.Executors.newSingleThreadExecutor { r ->
+        Thread(r, "pocket-probe").apply { isDaemon = true }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -125,12 +128,20 @@ class DeviceControlActivity : ComponentActivity() {
         address.text = url
         token.text = config.token
 
-        val tier = Privilege(this).detect(force = true)
-        val a11y = PocketAccessibility.isRunning()
-        accessibilityState.text = getString(
-            if (a11y) R.string.bridge_a11y_on else R.string.bridge_a11y_off,
-            tier.id,
-        )
+        // Probing the tier can block for seconds (a root prompt, a Shizuku binder
+        // round trip), so it never runs on the UI thread.
+        accessibilityState.text = getString(R.string.bridge_probing)
+        probeExecutor.execute {
+            val tier = Privilege(this).detect(force = true)
+            val a11y = PocketAccessibility.isRunning()
+            runOnUiThread {
+                if (isFinishing || isDestroyed) return@runOnUiThread
+                accessibilityState.text = getString(
+                    if (a11y) R.string.bridge_a11y_on else R.string.bridge_a11y_off,
+                    tier.id,
+                )
+            }
+        }
 
         val group = findViewById<RadioGroup>(R.id.tier_group)
         val wanted = when (config.tierPreference) {
@@ -159,7 +170,12 @@ class DeviceControlActivity : ComponentActivity() {
     }
 
     private fun runTest() {
-        val result = Privilege(this).test()
+        testResult.visibility = View.VISIBLE
+        testResult.text = getString(R.string.bridge_probing)
+        probeExecutor.execute { reportTest(Privilege(this).test()) }
+    }
+
+    private fun reportTest(result: Map<String, Any>) {
         val text = buildString {
             append("tier=").append(result["tier"]).append('\n')
             append("exit=").append(result["exit"]).append('\n')
@@ -169,8 +185,10 @@ class DeviceControlActivity : ComponentActivity() {
                 append("\naccessibility=").append(PocketAccessibility.isRunning())
             }
         }
-        testResult.visibility = View.VISIBLE
-        testResult.text = text
+        runOnUiThread {
+            if (isFinishing || isDestroyed) return@runOnUiThread
+            testResult.text = text
+        }
         Log.i(TAG, "BRIDGE test tier=${result["tier"]} exit=${result["exit"]}")
     }
 }
