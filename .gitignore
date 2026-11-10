@@ -1,0 +1,20 @@
+# Gradle
+build/
+.gradle/
+local.properties
+
+# Android Studio / IntelliJ
+*.iml
+.idea/
+
+# Kotlin
+.kotlin/
+
+# CMake
+.cxx/
+
+# Captures and logs
+captures/
+*.log
+keystore/
+build.log

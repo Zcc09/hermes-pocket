@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_label">Hermes Pocket</string>
+    <string name="cant_reach_hermes">Can\'t reach Hermes</string>
+    <string name="retry">Retry</string>
+    <string name="open_in_browser">Open in browser</string>
+    <string name="hint_open_in_browser">Trouble signing in? Open in your browser</string>
+    <string name="download_started">Download started</string>
+    <string name="download_failed">Download failed</string>
+    <string name="back_again_to_exit">Press back again to exit</string>
+    <string name="no_browser">No app on this device can open web links</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="session_title">Sign-in session</string>
+    <string name="menu_change_server">Change server</string>
+    <string name="setup_title">Your server</string>
+    <string name="setup_body">Enter the address of your Hermes web app: a machine on your network, or the public URL you use.</string>
+    <string name="setup_label">Server address</string>
+    <string name="setup_hint">192.168.1.20:9120</string>
+    <string name="setup_connect">Connect</string>
+    <string name="setup_helper">Private addresses are opened over http, public ones over https. Add the port if your server needs one.</string>
+    <string name="setup_error">That is not an address the app can open. Try 192.168.1.20:9120 or https://example.com</string>
+    <string name="clear_session">Clear session and reload</string>
+</resources>

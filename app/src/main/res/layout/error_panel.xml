@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/error_panel"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/hp_background"
+    android:clickable="true"
+    android:focusable="true"
+    android:paddingStart="32dp"
+    android:paddingEnd="32dp"
+    android:visibility="gone">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:contentDescription="@null"
+            android:src="@drawable/hp_error_mark" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/cant_reach_hermes"
+            android:textColor="@color/hp_text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/error_reason"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_horizontal"
+            android:textColor="@color/hp_text_secondary"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/error_retry"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/hp_button_primary"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="@string/retry"
+            android:textColor="@color/hp_background"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/error_browser"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="@string/open_in_browser"
+            android:textColor="@color/hp_text_secondary"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/error_change_server"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="@string/menu_change_server"
+            android:textColor="@color/hp_text_secondary"
+            android:textSize="14sp" />
+    </LinearLayout>
+</FrameLayout>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- full-bleed base tile -->
+    <path android:fillColor="@color/ic_launcher_background_color"
+        android:pathData="M0,0H108V108H0Z" />
+    <!-- top-left panel at ~70% over the tile (0xB3 == 179/255) -->
+    <path android:fillColor="#B32D7FF9"
+        android:pathData="M0,0H100L0,100Z" />
+    <!-- bottom-right panel at ~70% over the tile -->
+    <path android:fillColor="#B32EC4B6"
+        android:pathData="M108,8V108H8Z" />
+</vector>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp"
+    android:height="40dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Rounded-square outline mark -->
+    <path
+        android:pathData="M7,4 L17,4 A3,3 0 0 1 20,7 L20,17 A3,3 0 0 1 17,20 L7,20 A3,3 0 0 1 4,17 L4,7 A3,3 0 0 1 7,4 Z"
+        android:fillColor="#00000000"
+        android:strokeColor="@color/hp_accent"
+        android:strokeWidth="1.5" />
+    <!-- Short prompt strokes inside the square -->
+    <path
+        android:pathData="M8.5,10 L11.5,10"
+        android:strokeColor="@color/hp_accent"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M8.5,14 L15.5,14"
+        android:strokeColor="@color/hp_accent_teal"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round" />
+</vector>

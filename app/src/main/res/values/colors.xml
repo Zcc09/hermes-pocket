@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="hp_background">#0E1116</color>
+    <color name="hp_surface">#131820</color>
+    <color name="hp_border">#222A35</color>
+    <color name="hp_text_primary">#F4F6F8</color>
+    <color name="hp_text_secondary">#98A2B3</color>
+    <color name="hp_accent">#2D7FF9</color>
+    <color name="hp_accent_teal">#2EC4B6</color>
+    <color name="hp_error">#FF7A70</color>
+</resources>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:shortcutId="change_server"
+        android:shortcutLongLabel="@string/menu_change_server"
+        android:shortcutShortLabel="@string/menu_change_server">
+        <intent
+            android:action="com.zcc09.hermespocket.CHANGE_SERVER"
+            android:targetClass="com.zcc09.hermespocket.MainActivity"
+            android:targetPackage="com.zcc09.hermespocket" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+</shortcuts>
