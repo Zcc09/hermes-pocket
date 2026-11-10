@@ -73,5 +73,8 @@ dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.activity:activity-ktx:1.9.3")
     implementation("dev.rikka.shizuku:api:13.1.5")
+    // The ContentProvider the manifest declares ships in its own artifact; without
+    // it Android cannot instantiate it and the app crashes before its first frame.
+    implementation("dev.rikka.shizuku:provider:13.1.5")
     testImplementation("junit:junit:4.13.2")
 }

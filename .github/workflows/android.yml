@@ -65,6 +65,12 @@ jobs:
           "$APKSIGNER" verify --print-certs app/build/outputs/apk/release/app-release.apk | tee apksigner.txt
           grep -q "CN=Hermes Pocket" apksigner.txt
 
+      - name: Assert every manifest component exists in the APK
+        # A declared class that no artifact ships kills the app before its first
+        # frame (providers and the Application are instantiated first). This is how
+        # a missing Shizuku provider artifact was caught.
+        run: python3 tools/check_components.py app/build/outputs/apk/release/app-release.apk
+
       - name: Assert the app bundles no browser
         # External links must go to the phone's own default browser. A Custom
         # Tabs or WebView-browser dependency creeping back in would change that

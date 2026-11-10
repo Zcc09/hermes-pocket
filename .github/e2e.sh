@@ -50,6 +50,14 @@ adb_ logcat -c || true
 timeout 120 adb shell am start -W -n "$PKG/.MainActivity" > /dev/null || fail "am start"
 sleep 6
 app_log > e2e-app.txt
+# An empty app log is its own failure mode (a crash before the first frame, or a
+# dead logcat). Say which, rather than letting every later assertion blame itself.
+if [ ! -s e2e-app.txt ]; then
+  echo "WARN: the app logged nothing; collecting evidence"
+  timeout 60 adb logcat -d -b crash -v time 2>/dev/null | tail -30
+  timeout 60 adb shell dumpsys activity activities 2>/dev/null | grep -m3 -E "mResumedActivity|topResumedActivity"
+  timeout 60 adb shell "dumpsys package $PKG | grep -m2 -E 'versionName|codePath'"
+fi
 adb_ exec-out screencap -p > "$SHOTS/01-setup.png" 2>/dev/null || true
 grep -q "SETUP shown" e2e-app.txt \
   && pass "setup screen shown on first launch" || fail "no setup screen on first launch"
