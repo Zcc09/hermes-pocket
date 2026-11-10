@@ -23,8 +23,10 @@ app adds a dark, branded frame around it:
   chain is never interrupted); a **tapped** link to another site opens in the
   phone's **default browser** — Firefox, Chrome, Brave, whatever you set. No
   browser is bundled, and none is preferred by the app
-- Pull-to-refresh, runtime permission prompts for camera and microphone,
-  file picker, download handling, and state save/restore on process death
+- Runtime permission prompts for camera and microphone, file picker, download
+  handling, and state save/restore on process death. **No** pull-to-refresh (it
+  fought the transcript's own scrolling): reload from the menu or the app icon's
+  shortcut instead
 - Background self-update check against the GitHub releases API
 - Long-press the bottom hint bar for the session menu: Change server, Open in
   browser, or Clear session (cookies, storage, cache) — no need to clear app
