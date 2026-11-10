@@ -128,6 +128,82 @@ if grep -q "ANR in $PKG" logcat-full.txt; then fail "app ANR'd"; else pass "no A
 echo "== 5. app log =="
 cat e2e-app.txt e2e-app-relaunch.txt 2>/dev/null | sed -n '1,60p'
 
+echo "== 6. device control bridge =="
+
+# Enable the accessibility service the way the user does in Settings, so the
+# gesture/UI/screenshot paths are exercised rather than skipped.
+adb_ shell settings put secure enabled_accessibility_services "$PKG/.bridge.PocketAccessibility" > /dev/null 2>&1 || true
+adb_ shell settings put secure accessibility_enabled 1 > /dev/null 2>&1 || true
+sleep 3
+
+adb_ shell am force-stop "$PKG" || true
+timeout 120 adb shell am start -W -n "$PKG/.MainActivity" -e server "$FIXTURE" -e bridge 1 > /dev/null || fail "am start with bridge hook"
+sleep 8
+
+BRIDGE_PORT=8737
+HOST_PORT=18737
+adb_ forward --remove tcp:$HOST_PORT > /dev/null 2>&1 || true
+timeout 60 adb forward tcp:$HOST_PORT tcp:$BRIDGE_PORT > /dev/null 2>&1 || fail "adb forward"
+BASE="http://127.0.0.1:$HOST_PORT"
+
+# Wait for the listener (the service starts asynchronously).
+up=0
+for i in $(seq 1 10); do
+  if curl -s -m 3 "$BASE/v1/health" | grep -q '"ok":true'; then up=1; break; fi
+  sleep 2
+done
+[ "$up" -eq 1 ] && pass "bridge answers on :$HOST_PORT" || fail "bridge never answered on :$HOST_PORT"
+
+TOKEN=$(adb_ shell run-as "$PKG" cat shared_prefs/hermes-pocket-bridge.xml 2>/dev/null \
+        | tr -d '\r' | sed -n 's/.*<string name="token">\([0-9a-f]*\)<\/string>.*/\1/p' | head -1)
+if [ -n "$TOKEN" ]; then
+  pass "bridge token read from the app's prefs (${#TOKEN} chars)"
+else
+  fail "could not read the bridge token"
+fi
+
+code=$(curl -s -o /dev/null -w '%{http_code}' -m 5 "$BASE/v1/status")
+[ "$code" = "401" ] && pass "unauthenticated /v1/status is refused (401)" || fail "unauthenticated status returned $code"
+
+auth="Authorization: Bearer $TOKEN"
+STATUS=$(curl -s -m 8 -H "$auth" "$BASE/v1/status")
+echo "$STATUS" | head -c 400; echo
+echo "$STATUS" | grep -q '"tier":"app"' && pass "status reports tier=app (no root, no Shizuku in CI)" \
+  || fail "status did not report tier=app"
+echo "$STATUS" | grep -q '"shell":true' && pass "status advertises shell" || fail "status does not advertise shell"
+
+SHELL_JSON=$(curl -s -m 20 -H "$auth" -H 'Content-Type: application/json' \
+  -d '{"cmd":"echo bridge-ok; exit 3"}' "$BASE/v1/shell")
+echo "$SHELL_JSON" | head -c 300; echo
+echo "$SHELL_JSON" | grep -q 'bridge-ok' && pass "shell ran a command and returned its output" \
+  || fail "shell produced no output"
+echo "$SHELL_JSON" | grep -q '"exit":3' && pass "shell propagates the exit code" || fail "shell lost the exit code"
+
+FS_JSON=$(curl -s -m 8 -H "$auth" "$BASE/v1/fs?op=list&path=/data/user/0/$PKG")
+echo "$FS_JSON" | grep -q '"ok":true' && pass "fs lists the app's own directory" || fail "fs list failed: $(echo "$FS_JSON" | head -c 200)"
+
+curl -s -m 8 -H "$auth" "$BASE/v1/screenshot" -o bridge-shot.png 2>/dev/null || true
+if [ -s bridge-shot.png ] && [ "$(head -c 4 bridge-shot.png | od -An -tx1 | tr -d ' \n')" = "89504e47" ]; then
+  pass "screenshot returned a PNG ($(stat -c%s bridge-shot.png 2>/dev/null || echo '?') bytes)"
+else
+  echo "WARN: screenshot unavailable (accessibility may not have attached): $(head -c 120 bridge-shot.png 2>/dev/null)"
+fi
+
+UI_JSON=$(curl -s -m 8 -H "$auth" "$BASE/v1/ui")
+if echo "$UI_JSON" | grep -q '<hierarchy'; then
+  pass "UI tree returned"
+else
+  echo "WARN: UI tree unavailable: $(echo "$UI_JSON" | head -c 160)"
+fi
+
+KEY_JSON=$(curl -s -m 10 -H "$auth" -H 'Content-Type: application/json' -d '{"action":"key","key":"BACK"}' "$BASE/v1/input")
+echo "$KEY_JSON" | grep -q '"ok":true' && pass "input key dispatched" || fail "input key failed: $(echo "$KEY_JSON" | head -c 200)"
+
+APPS_JSON=$(curl -s -m 10 -H "$auth" -H 'Content-Type: application/json' -d '{"action":"list"}' "$BASE/v1/app")
+echo "$APPS_JSON" | grep -q '"apps"' && pass "app list returned" || fail "app list failed"
+
+adb_ forward --remove tcp:$HOST_PORT > /dev/null 2>&1 || true
+
 echo "== screenshots =="
 ls -la "$SHOTS" || true
 

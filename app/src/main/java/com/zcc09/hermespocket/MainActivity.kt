@@ -41,7 +41,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 /**
  * Single-activity shell that hosts the user's own Hermes web app in a WebView.
@@ -67,8 +66,14 @@ class MainActivity : ComponentActivity() {
         /** Launcher shortcut / internal intent: open the server setup screen. */
         const val ACTION_CHANGE_SERVER = "com.zcc09.hermespocket.CHANGE_SERVER"
 
+        /** Launcher shortcut: reload the page (pull-to-refresh is gone by design). */
+        const val ACTION_RELOAD = "com.zcc09.hermespocket.RELOAD"
+
         /** Test hook: `am start … -e server https://example.com` sets the server once. */
         private const val EXTRA_SERVER = "server"
+
+        /** Test hook: `-e bridge 1` starts device control so CI can drive the bridge. */
+        private const val EXTRA_BRIDGE = "bridge"
     }
 
     private lateinit var webView: WebView
@@ -76,7 +81,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var errorPanel: View
     private lateinit var errorReason: TextView
     private lateinit var hintBar: View
-    private lateinit var swipeRefresh: SwipeRefreshLayout
     private lateinit var setupPanel: View
     private lateinit var serverInput: EditText
     private lateinit var serverError: TextView
@@ -106,7 +110,6 @@ class MainActivity : ComponentActivity() {
         errorPanel = findViewById(R.id.error_panel)
         errorReason = findViewById(R.id.error_reason)
         hintBar = findViewById(R.id.hint_bar)
-        swipeRefresh = findViewById(R.id.swipe_refresh)
         setupPanel = findViewById(R.id.setup_panel)
         serverInput = findViewById(R.id.server_input)
         serverError = findViewById(R.id.server_error)
@@ -141,6 +144,11 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        if (intent?.getStringExtra(EXTRA_BRIDGE) == "1") {
+            DeviceControlService.start(this)
+            Log.i(TAG, "BRIDGE started by test hook")
+        }
+
         Updater(this).start()
     }
 
@@ -148,6 +156,10 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         if (intent.action == ACTION_CHANGE_SERVER) {
             showSetup(store.get())
+            return
+        }
+        if (intent.action == ACTION_RELOAD) {
+            reloadPage()
             return
         }
         val data = intent.data ?: return
@@ -246,7 +258,6 @@ class MainActivity : ComponentActivity() {
         }
 
         override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
-            swipeRefresh.isRefreshing = false
             hideErrorPanel()
             progressBar.visibility = View.VISIBLE
             progressBar.progress = 0
@@ -255,7 +266,6 @@ class MainActivity : ComponentActivity() {
         }
 
         override fun onPageFinished(view: WebView, url: String) {
-            swipeRefresh.isRefreshing = false
             progressBar.visibility = View.GONE
             updateHintBar(url)
             Log.i(TAG, "PAGE_FINISHED url=$url")
@@ -263,7 +273,6 @@ class MainActivity : ComponentActivity() {
 
         override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
             if (!request.isForMainFrame) return
-            swipeRefresh.isRefreshing = false
             Log.w(TAG, "Main frame error: ${error.description} (${error.errorCode})")
             showErrorPanel(error.description)
         }
@@ -347,14 +356,6 @@ class MainActivity : ComponentActivity() {
     // region Chrome UI wiring
 
     private fun setupChrome() {
-        swipeRefresh.setColorSchemeColors(
-            ContextCompat.getColor(this, R.color.hp_accent),
-            ContextCompat.getColor(this, R.color.hp_accent_teal)
-        )
-        swipeRefresh.setOnRefreshListener {
-            webView.reload()
-        }
-
         findViewById<View>(R.id.error_retry).setOnClickListener {
             hideErrorPanel()
             webView.reload()
@@ -450,7 +451,6 @@ class MainActivity : ComponentActivity() {
         webView.visibility = View.GONE
         hintBar.visibility = View.GONE
         progressBar.visibility = View.GONE
-        swipeRefresh.isRefreshing = false
         serverError.visibility = View.GONE
         // Show the address exactly as it is stored: reconnecting must not silently
         // switch an http deployment to https through scheme inference.
@@ -468,20 +468,31 @@ class MainActivity : ComponentActivity() {
 
     private fun showSessionMenu() {
         val items = arrayOf(
+            getString(R.string.menu_reload),
             getString(R.string.menu_change_server),
             getString(R.string.open_in_browser),
+            getString(R.string.shortcut_device_control),
             getString(R.string.clear_session)
         )
         AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
             .setTitle(R.string.session_title)
             .setItems(items) { _, which ->
                 when (which) {
-                    0 -> showSetup(serverUrl)
-                    1 -> openInBrowser(currentUrl())
+                    0 -> reloadPage()
+                    1 -> showSetup(serverUrl)
+                    2 -> openInBrowser(currentUrl())
+                    3 -> startActivity(Intent(this, DeviceControlActivity::class.java))
                     else -> clearSession()
                 }
             }
             .show()
+    }
+
+    private fun reloadPage() {
+        if (serverUrl == null) return
+        hideErrorPanel()
+        Log.i(TAG, "RELOAD requested")
+        webView.reload()
     }
 
     /** Forgets every cookie, form entry and cached byte of this site, then starts over. */
@@ -505,7 +516,6 @@ class MainActivity : ComponentActivity() {
         errorPanel.visibility = View.VISIBLE
         webView.visibility = View.GONE
         progressBar.visibility = View.GONE
-        swipeRefresh.isRefreshing = false
     }
 
     private fun hideErrorPanel() {

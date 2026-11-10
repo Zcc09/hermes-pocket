@@ -155,6 +155,32 @@ sideloaded APK updates from the release asset and never from the debug one.
 - A plain `http://` address works but is unencrypted; use `https://` for
   anything beyond your own network (the setup helper says so).
 
+## Device control
+
+The app can also act as a bridge: a foreground service inside Hermes Pocket
+exposes a small HTTP/JSON API on the phone's LAN address (default port `8737`),
+so the Hermes Agent on your computer can run shell commands on the phone, read
+and write files, take screenshots, read the UI hierarchy, tap/swipe/type, launch
+and stop apps, and fire intents. Auth is a bearer token the app generates and
+shows you.
+
+How much it can do depends on the privilege tier you grant:
+
+| Tier | How | Reach |
+|---|---|---|
+| **Root** | Magisk -> Superuser, allow the prompt, choose Remember | everything — `input`, `pm`, `settings`, any path |
+| **Shizuku** | helper app started once over adb or wireless debugging | shell uid — most apps and paths, not other apps' data |
+| **None** | no extra access | app uid, intents, plus gestures and screenshots with the accessibility service |
+
+While it is on, anyone on your network with the token has remote code execution
+on your phone. Keep it on your own Wi-Fi, turn it off when you are not using
+it, and never port-forward it. It is not a VPN, there is no cloud relay, and
+there is no telemetry.
+
+Full setup steps, the capability matrix, security notes and troubleshooting are
+in [docs/DEVICE-CONTROL.md](docs/DEVICE-CONTROL.md). `tools/pocket.py` is the
+stdlib CLI the agent uses to drive it.
+
 ## Self-update
 
 On each launch (at most one check per 10 minutes) `Updater` queries

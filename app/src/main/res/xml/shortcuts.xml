@@ -11,4 +11,26 @@
             android:targetPackage="com.zcc09.hermespocket" />
         <categories android:name="android.shortcut.conversation" />
     </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:shortcutId="reload"
+        android:shortcutLongLabel="@string/shortcut_reload"
+        android:shortcutShortLabel="@string/shortcut_reload">
+        <intent
+            android:action="com.zcc09.hermespocket.RELOAD"
+            android:targetClass="com.zcc09.hermespocket.MainActivity"
+            android:targetPackage="com.zcc09.hermespocket" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:shortcutId="device_control"
+        android:shortcutLongLabel="@string/shortcut_device_control"
+        android:shortcutShortLabel="@string/shortcut_device_control">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.zcc09.hermespocket.DeviceControlActivity"
+            android:targetPackage="com.zcc09.hermespocket" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
 </shortcuts>

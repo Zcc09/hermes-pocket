@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/hp_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="24dp"
+        android:paddingTop="24dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="40dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/bridge_title"
+            android:textColor="@color/hp_text_primary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/bridge_intro"
+            android:textColor="@color/hp_text_secondary"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="20dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/bridge_switch_label"
+                android:textColor="@color/hp_text_primary"
+                android:textSize="16sp" />
+
+            <Switch
+                android:id="@+id/switch_control"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/text_state"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/hp_text_secondary"
+            android:textSize="13sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/bridge_pairing_title"
+            android:textColor="@color/hp_text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_address"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/hp_input_bg"
+            android:fontFamily="monospace"
+            android:padding="12dp"
+            android:textColor="@color/hp_text_primary"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/text_token"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/hp_input_bg"
+            android:fontFamily="monospace"
+            android:padding="12dp"
+            android:textColor="@color/hp_text_primary"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/button_copy"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/hp_button_primary"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="@string/bridge_copy"
+            android:textColor="@color/hp_background"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/bridge_access_title"
+            android:textColor="@color/hp_text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/bridge_access_body"
+            android:textColor="@color/hp_text_secondary"
+            android:textSize="13sp" />
+
+        <RadioGroup
+            android:id="@+id/tier_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical">
+
+            <RadioButton
+                android:id="@+id/radio_auto"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:text="@string/bridge_tier_auto"
+                android:textColor="@color/hp_text_primary"
+                android:textSize="14sp" />
+
+            <RadioButton
+                android:id="@+id/radio_root"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:text="@string/bridge_tier_root"
+                android:textColor="@color/hp_text_primary"
+                android:textSize="14sp" />
+
+            <RadioButton
+                android:id="@+id/radio_shizuku"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:text="@string/bridge_tier_shizuku"
+                android:textColor="@color/hp_text_primary"
+                android:textSize="14sp" />
+
+            <RadioButton
+                android:id="@+id/radio_app"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:text="@string/bridge_tier_app"
+                android:textColor="@color/hp_text_primary"
+                android:textSize="14sp" />
+        </RadioGroup>
+
+        <TextView
+            android:id="@+id/text_accessibility"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/hp_text_secondary"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/button_accessibility"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/hp_input_bg"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="@string/bridge_open_accessibility"
+            android:textColor="@color/hp_text_primary"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/button_test"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/hp_input_bg"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="@string/bridge_test"
+            android:textColor="@color/hp_text_primary"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/text_test_result"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="monospace"
+            android:textColor="@color/hp_text_secondary"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/button_new_token"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="@string/bridge_new_token"
+            android:textColor="@color/hp_text_secondary"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/bridge_guide"
+            android:textColor="@color/hp_text_secondary"
+            android:textSize="12sp" />
+    </LinearLayout>
+</ScrollView>
