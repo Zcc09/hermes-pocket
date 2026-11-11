@@ -244,7 +244,7 @@ adb_ shell am start -n "$PKG/.MainActivity" -e bridge 1 > /dev/null 2>&1 || true
 # The restart also stopped the bridge service, so wait for it to listen again
 # before asking it to notify; a curl against a dead port returns nothing.
 for _ in $(seq 1 25); do
-  curl -s -m 2 -H "$auth" "$BASE/v1/status" | grep -q '"ok":true' && break
+  curl -s -m 2 -H "$auth" "$BASE/v1/status" | grep -q '"appVisible":true' && break
   sleep 1
 done
 FG_JSON=$(curl -s -m 8 -H "$auth" -H 'Content-Type: application/json' \

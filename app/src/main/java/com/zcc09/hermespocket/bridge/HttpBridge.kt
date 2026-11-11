@@ -251,7 +251,10 @@ class HttpBridge(
             .put("device", JSONObject(privilege.deviceInfo() as Map<*, *>))
             .put("bridge", JSONObject()
                 .put("port", config.port)
-                .put("since", STARTED_AT / 1000L))
+                .put("since", STARTED_AT / 1000L)
+                // Whether a screen of the app is in front right now: an agent can
+                // use it to decide between a notification and staying quiet.
+                .put("appVisible", Notifier.appVisible))
         return json(200, payload)
     }
 
