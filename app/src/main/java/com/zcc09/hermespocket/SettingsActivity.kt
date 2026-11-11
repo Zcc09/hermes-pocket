@@ -137,10 +137,17 @@ class SettingsActivity : ComponentActivity() {
         }
     }
 
-    private fun showProbe(dot: Int, text: String) {
+    /**
+     * The verdict is a sentence, not a coloured dot: "No answer" and
+     * "Reachable · 38 ms" already tell the user which is which, so the colour
+     * only reinforces what the words say.
+     */
+    private fun showProbe(text: String, tone: Int) {
         runOnUiThread {
-            findViewById<View>(R.id.dot_probe).setBackgroundResource(dot)
-            findViewById<TextView>(R.id.text_probe).text = text
+            findViewById<TextView>(R.id.text_probe).apply {
+                setText(text)
+                setTextColor(getColor(tone))
+            }
         }
     }
 
@@ -161,10 +168,10 @@ class SettingsActivity : ComponentActivity() {
     private fun probe() {
         val server = ServerStore(this).get()
         if (server == null) {
-            showProbe(R.drawable.hp_dot_bad, getString(R.string.settings_probe_no_server))
+            showProbe(getString(R.string.settings_probe_no_server), R.color.hp_error)
             return
         }
-        showProbe(R.drawable.hp_dot_idle, getString(R.string.settings_probe_running))
+        showProbe(getString(R.string.settings_probe_running), R.color.hp_text_secondary)
         val target = server.toString()
         probeExecutor.execute {
             val started = System.currentTimeMillis()
@@ -186,14 +193,14 @@ class SettingsActivity : ComponentActivity() {
                 onSuccess = { code ->
                     Log.i(TAG, "SETTINGS probe ${code} in ${elapsed}ms")
                     if (code in 200..399) {
-                        showProbe(R.drawable.hp_dot_ok, getString(R.string.settings_probe_ok, elapsed))
+                        showProbe(getString(R.string.settings_probe_ok, elapsed), R.color.hp_accent_teal)
                     } else {
-                        showProbe(R.drawable.hp_dot_bad, getString(R.string.settings_probe_http, code))
+                        showProbe(getString(R.string.settings_probe_http, code), R.color.hp_error)
                     }
                 },
                 onFailure = { error ->
                     Log.i(TAG, "SETTINGS probe failed: ${error.message}")
-                    showProbe(R.drawable.hp_dot_bad, getString(R.string.settings_probe_failed))
+                    showProbe(getString(R.string.settings_probe_failed), R.color.hp_error)
                 },
             )
         }

@@ -89,21 +89,22 @@
                 android:id="@+id/row_probe"
                 style="@style/SettingsRow">
 
-                <View
-                    android:id="@+id/dot_probe"
-                    android:layout_width="8dp"
-                    android:layout_height="8dp"
-                    android:layout_marginEnd="12dp"
-                    android:background="@drawable/hp_dot_idle" />
-
-                <TextView
-                    android:id="@+id/text_probe"
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/settings_probe_idle"
-                    android:textColor="@color/hp_text_secondary"
-                    android:textSize="14sp" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/SettingsLabel"
+                        android:text="@string/settings_probe" />
+
+                    <TextView
+                        android:id="@+id/text_probe"
+                        style="@style/SettingsValue"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/settings_probe_idle" />
+                </LinearLayout>
 
                 <ImageView
                     style="@style/SettingsChevron"
@@ -122,7 +123,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/settings_sign_out"
-                    android:textColor="@color/hp_text_primary"
+                    android:textColor="@color/hp_error"
                     android:textSize="16sp" />
             </LinearLayout>
         </LinearLayout>

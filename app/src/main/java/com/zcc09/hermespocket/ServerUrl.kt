@@ -42,6 +42,17 @@ object ServerUrl {
     fun hostOf(url: String): String? =
         runCatching { java.net.URI(url).host?.lowercase() }.getOrNull()
 
+    /** host[:port] — what the session bar shows; the scheme is added only for http. */
+    fun hostPortOf(url: String): String? = runCatching {
+        val uri = java.net.URI(url)
+        val host = uri.host?.lowercase()
+        when {
+            host == null -> null
+            uri.port == -1 -> host
+            else -> "$host:${uri.port}"
+        }
+    }.getOrNull()
+
     /** True when [url] is served over plain HTTP (worth a warning in the UI). */
     fun isPlainHttp(url: String): Boolean =
         url.startsWith("http://", ignoreCase = true)

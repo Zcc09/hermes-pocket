@@ -153,6 +153,7 @@ class MainActivity : ComponentActivity() {
         }
 
         renderHost()
+        widenSettingsTarget()
         Updater(this).start()
     }
 
@@ -535,10 +536,36 @@ class MainActivity : ComponentActivity() {
         progressBar.visibility = View.GONE
     }
 
-    /** The session bar always says which server this app is pointed at. */
+    /**
+     * The session bar always says which server this app is pointed at. A plain
+     * http deployment is called out, because on a phone "no lock" is the whole
+     * difference between the two and the host alone would hide it.
+     */
     private fun renderHost() {
         val view = findViewById<TextView>(R.id.text_host)
-        view.text = store.get()?.toString() ?: getString(R.string.settings_server_none)
+        val stored = store.get()
+        view.text = when {
+            stored == null -> getString(R.string.settings_server_none)
+            ServerUrl.isPlainHttp(stored) -> getString(R.string.session_host_plain, ServerUrl.hostPortOf(stored))
+            else -> ServerUrl.hostPortOf(stored)
+        }
+    }
+
+    /**
+     * The gear is 32dp wide inside a 28dp bar; a TouchDelegate widens it to the
+     * 48dp target a thumb expects without growing the chrome.
+     */
+    private fun widenSettingsTarget() {
+        val bar = findViewById<View>(R.id.session_bar)
+        val gear = findViewById<View>(R.id.button_settings)
+        bar.post {
+            val rect = android.graphics.Rect()
+            gear.getHitRect(rect)
+            val dx = (48 - rect.width()).coerceAtLeast(0) / 2
+            val dy = (48 - rect.height()).coerceAtLeast(0) / 2
+            rect.inset(-dx, -dy)
+            bar.touchDelegate = android.view.TouchDelegate(rect, gear)
+        }
     }
 
     private fun hideErrorPanel() {

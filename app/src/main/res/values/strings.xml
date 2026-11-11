@@ -21,13 +21,14 @@
     <string name="settings_back">Back</string>
     <string name="settings_section_connection">Connection</string>
     <string name="settings_section_notifications">Notifications</string>
-    <string name="settings_section_device">Device control</string>
+    <string name="settings_section_device">This phone</string>
     <string name="settings_section_about">About</string>
     <string name="settings_server">Server</string>
     <string name="settings_server_none">Not set yet</string>
+    <string name="session_host_plain">%1$s · http</string>
     <string name="settings_change_server">Change server</string>
-    <string name="settings_probe">Check the server answers</string>
-    <string name="settings_probe_idle">Check connection</string>
+    <string name="settings_probe">Connection</string>
+    <string name="settings_probe_idle">Tap to test</string>
     <string name="settings_probe_running">Checking…</string>
     <string name="settings_probe_ok">Reachable · %1$d ms</string>
     <string name="settings_probe_http">Answered with HTTP %1$d</string>

@@ -62,4 +62,13 @@ class ServerUrlTest {
         assertTrue(ServerUrl.isPlainHttp(url))
         assertFalse(ServerUrl.isPlainHttp(ServerUrl.normalize("example.com")!!))
     }
+
+    @Test
+    fun hostPortKeepsThePortTheUserTyped() {
+        assertEquals("192.168.0.172:9120", ServerUrl.hostPortOf(ServerUrl.normalize("192.168.0.172:9120")!!))
+        assertEquals("hermes.mojangle.net", ServerUrl.hostPortOf(ServerUrl.normalize("hermes.mojangle.net")!!))
+        assertEquals("hermes.mojangle.net:8443",
+            ServerUrl.hostPortOf(ServerUrl.normalize("https://hermes.mojangle.net:8443/")!!))
+        assertNull(ServerUrl.hostPortOf("not a url"))
+    }
 }
