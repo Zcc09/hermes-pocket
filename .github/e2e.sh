@@ -240,8 +240,13 @@ echo "== 7. reply notifications =="
 adb_ shell pm grant "$PKG" android.permission.POST_NOTIFICATIONS > /dev/null 2>&1 || true
 # A permission change can restart the app process; bring it back to the front or
 # the visibility suppression has nothing to suppress and this tests nothing.
-adb_ shell am start -n "$PKG/.MainActivity" > /dev/null 2>&1 || true
-sleep 3
+adb_ shell am start -n "$PKG/.MainActivity" -e bridge 1 > /dev/null 2>&1 || true
+# The restart also stopped the bridge service, so wait for it to listen again
+# before asking it to notify; a curl against a dead port returns nothing.
+for _ in $(seq 1 25); do
+  curl -s -m 2 -H "$auth" "$BASE/v1/status" | grep -q '"ok":true' && break
+  sleep 1
+done
 FG_JSON=$(curl -s -m 8 -H "$auth" -H 'Content-Type: application/json' \
   -d '{"title":"Hermes","body":"foreground probe"}' "$BASE/v1/notify")
 echo "$FG_JSON"
