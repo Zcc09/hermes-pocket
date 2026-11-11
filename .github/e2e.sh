@@ -357,6 +357,12 @@ echo "== 9. device control: shizuku =="
 adb_ shell am force-stop "$PKG" > /dev/null 2>&1 || true
 adb_ shell am start -n "$PKG/.MainActivity" -e screen device-control > /dev/null 2>&1 || true
 sleep 4
+# The form is longer than the screen; scroll to the Shizuku block the way a
+# person would before reading it.
+adb_ shell input swipe 540 1700 540 500 250 > /dev/null 2>&1 || true
+sleep 1
+adb_ shell input swipe 540 1700 540 500 250 > /dev/null 2>&1 || true
+sleep 2
 echo "top: $(adb_ shell dumpsys activity activities 2>/dev/null | grep -i 'ResumedActivity' | head -2 | tr -d '\r')"
 timeout 90 adb shell uiautomator dump /sdcard/ui-dc.xml > /dev/null 2>&1 || true
 adb_ pull /sdcard/ui-dc.xml dc.xml > /dev/null 2>&1 || true
