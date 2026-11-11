@@ -16,7 +16,8 @@ import sys
 BOUNDS = re.compile(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"')
 LABEL = re.compile(r'(content-desc|text)="Settings"')
 PACKAGE = re.compile(r'package="([^"]+)"')
-TOP_STRIP_PX = 200
+FALLBACK_HEIGHT = 2400
+TOP_STRIP_FRACTION = 0.2  # the session bar is the first ~2% of the screen
 
 
 def main() -> int:
@@ -38,7 +39,16 @@ def main() -> int:
     except OSError:
         return 0
 
-    for node in re.finditer(r"<node[^>]*>", xml):
+    nodes = list(re.finditer(r"<node[^>]*>", xml))
+    screen_height = FALLBACK_HEIGHT
+    for node in nodes:
+        box = BOUNDS.search(node.group(0))
+        if box:
+            screen_height = max(screen_height, int(box.group(4)))
+            break
+    top_strip = int(screen_height * TOP_STRIP_FRACTION)
+
+    for node in nodes:
         chunk = node.group(0)
         box = BOUNDS.search(chunk)
         if not box:
@@ -53,7 +63,7 @@ def main() -> int:
             continue
         if package and owner not in (None, package):
             continue
-        if y2 > TOP_STRIP_PX:
+        if y2 > top_strip:
             continue
         print((x1 + x2) // 2, (y1 + y2) // 2)
         return 0

@@ -152,6 +152,7 @@ jobs:
           path: |
             logcat-full.txt
             e2e-*.txt
+            settings*.xml
             screenshots/*.png
           if-no-files-found: ignore
 

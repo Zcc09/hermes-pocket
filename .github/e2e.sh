@@ -296,15 +296,9 @@ else
 fi
 
 if [ "$OPENED" -ne 1 ]; then
-  # The screen's content is what matters; reach it directly when the emulator
-  # swallows the tap, and say so rather than pretending the tap worked.
-  adb_ shell am start -n "$PKG/.SettingsActivity" > /dev/null 2>&1 || true
-  sleep 3
-  timeout 90 adb shell uiautomator dump /sdcard/ui-settings.xml > /dev/null 2>&1 || true
-  adb_ pull /sdcard/ui-settings.xml settings.xml > /dev/null 2>&1 || true
-  grep -q 'text="Connection"' settings.xml \
-    && pass "settings opened directly after the tap was swallowed" \
-    || fail "settings screen did not open at all"
+  # A non-exported activity cannot be started from adb, so the tap is the only
+  # way in; the dump travels with the artifact when it fails.
+  fail "settings did not open from the session bar"
 fi
 
 for label in "Settings" "Connection" "Notifications" "Version"; do
