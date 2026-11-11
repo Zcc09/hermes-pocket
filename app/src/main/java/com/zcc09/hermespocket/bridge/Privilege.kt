@@ -144,9 +144,15 @@ class Privilege(private val context: Context) {
      * package without that filter and only throws when it is genuinely absent.
      * A live binder is proof enough on its own.
      */
+    /**
+     * `checkPermission` answers PERMISSION_DENIED for a package that is not
+     * installed instead of throwing, so it cannot prove presence — reading the
+     * package does, and that is what "Installed" claims.
+     */
     private fun shizukuInstalled(): Boolean = runCatching {
-        context.packageManager.checkPermission(SHIZUKU_API_PERMISSION, SHIZUKU_PACKAGE)
-    }.isSuccess
+        context.packageManager.getPackageInfo(SHIZUKU_PACKAGE, 0)
+        true
+    }.getOrDefault(false)
 
     /**
      * Asks Shizuku for its permission. Shizuku shows its own confirmation
