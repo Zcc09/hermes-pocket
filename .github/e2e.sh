@@ -354,6 +354,7 @@ sleep 2
 echo "== 9. device control: shizuku =="
 # Reached through the app's own test hook: device control stays unexported
 # because it displays the pairing token, so adb cannot launch it directly.
+adb_ shell am force-stop "$PKG" > /dev/null 2>&1 || true
 adb_ shell am start -n "$PKG/.MainActivity" -e screen device-control > /dev/null 2>&1 || true
 sleep 4
 timeout 90 adb shell uiautomator dump /sdcard/ui-dc.xml > /dev/null 2>&1 || true

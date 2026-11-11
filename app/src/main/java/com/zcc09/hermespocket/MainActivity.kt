@@ -156,11 +156,7 @@ class MainActivity : ComponentActivity() {
             Log.i(TAG, "BRIDGE started by test hook")
         }
 
-        if (intent?.getStringExtra(EXTRA_SCREEN) == "device-control") {
-            // Device control shows the pairing token, so it stays unexported and
-            // this hook is how the smoke suite reaches it.
-            startActivity(Intent(this, DeviceControlActivity::class.java))
-        }
+        openRequestedScreen(intent)
 
         renderHost()
         widenSettingsTarget()
@@ -181,6 +177,7 @@ class MainActivity : ComponentActivity() {
             clearSession()
             return
         }
+        openRequestedScreen(intent)
         val data = intent.data ?: return
         intent.data = null
         Log.i(TAG, "onNewIntent url ${data.toString()}")
@@ -605,6 +602,17 @@ class MainActivity : ComponentActivity() {
             if (signInInFlight) Log.i(TAG, "SIGNIN back on the app at path=$path")
             false
         }
+    }
+
+    /**
+     * Device control shows the pairing token, so it stays unexported; this hook
+     * is how the smoke suite reaches it. Handled from a fresh create and from a
+     * re-delivered intent, because `am start` on the running app goes through
+     * onNewIntent.
+     */
+    private fun openRequestedScreen(intent: Intent?) {
+        if (intent?.getStringExtra(EXTRA_SCREEN) != "device-control") return
+        startActivity(Intent(this, DeviceControlActivity::class.java))
     }
 
     /**
