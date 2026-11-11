@@ -157,7 +157,7 @@ jobs:
             logcat-full.txt
             logcat-crash.txt
             e2e-*.txt
-            settings*.xml
+            *.xml
             screenshots/*.png
           if-no-files-found: ignore
 
