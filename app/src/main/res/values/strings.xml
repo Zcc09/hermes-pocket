@@ -27,8 +27,12 @@
     <string name="settings_server_none">Not set yet</string>
     <string name="session_host_plain">%1$s · http</string>
     <string name="settings_change_server">Change server</string>
-    <string name="settings_probe">Connection</string>
-    <string name="settings_probe_idle">Tap to test</string>
+    <string name="settings_probe">Test connection</string>
+    <string name="settings_probe_label">Test connection</string>
+    <string name="settings_action_test">Test</string>
+    <string name="settings_action_send">Send</string>
+    <string name="settings_action_check">Check</string>
+    <string name="settings_probe_idle">Not tested yet</string>
     <string name="settings_probe_running">Checking…</string>
     <string name="settings_probe_ok">Reachable · %1$d ms</string>
     <string name="settings_probe_http">Answered with HTTP %1$d</string>
@@ -37,8 +41,8 @@
     <string name="settings_sign_out">Sign out of this session</string>
     <string name="settings_sign_out_hint">Clears this app\'s cookies and page storage. The server keeps working for every other device.</string>
     <string name="settings_sign_out_confirm">Clear cookies and page storage, then reload the sign-in page?</string>
-    <string name="settings_permission_off">Off</string>
-    <string name="settings_permission_allowed">Allowed by Android</string>
+    <string name="settings_permission_off">Off · no notifications</string>
+    <string name="settings_permission_allowed">On · Android allows notifications</string>
     <string name="settings_permission_blocked">Blocked by Android — allow notifications</string>
     <string name="settings_permission_unknown">Checking…</string>
     <string name="settings_device_off">Off</string>

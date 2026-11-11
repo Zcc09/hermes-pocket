@@ -97,7 +97,7 @@
 
                     <TextView
                         style="@style/SettingsLabel"
-                        android:text="@string/settings_probe" />
+                        android:text="@string/settings_probe_label" />
 
                     <TextView
                         android:id="@+id/text_probe"
@@ -106,10 +106,9 @@
                         android:text="@string/settings_probe_idle" />
                 </LinearLayout>
 
-                <ImageView
-                    style="@style/SettingsChevron"
-                    android:contentDescription="@string/settings_probe"
-                    android:src="@drawable/ic_refresh" />
+                <TextView
+                    style="@style/SettingsAction"
+                    android:text="@string/settings_action_test" />
             </LinearLayout>
 
             <View style="@style/SettingsDivider" />
@@ -126,11 +125,13 @@
                     android:textColor="@color/hp_error"
                     android:textSize="16sp" />
             </LinearLayout>
-        </LinearLayout>
 
-        <TextView
-            style="@style/SettingsHint"
-            android:text="@string/settings_sign_out_hint" />
+            <View style="@style/SettingsDivider" />
+
+            <TextView
+                style="@style/SettingsFooter"
+                android:text="@string/settings_sign_out_hint" />
+        </LinearLayout>
 
         <!-- Notifications -->
         <TextView
@@ -180,12 +181,18 @@
                     android:text="@string/notify_test"
                     android:textColor="@color/hp_text_primary"
                     android:textSize="16sp" />
-            </LinearLayout>
-        </LinearLayout>
 
-        <TextView
-            style="@style/SettingsHint"
-            android:text="@string/notify_switch_hint" />
+                <TextView
+                    style="@style/SettingsAction"
+                    android:text="@string/settings_action_send" />
+            </LinearLayout>
+
+            <View style="@style/SettingsDivider" />
+
+            <TextView
+                style="@style/SettingsFooter"
+                android:text="@string/notify_switch_hint" />
+        </LinearLayout>
 
         <!-- Device control -->
         <TextView
@@ -261,6 +268,10 @@
                     android:text="@string/settings_check_updates"
                     android:textColor="@color/hp_text_primary"
                     android:textSize="16sp" />
+
+                <TextView
+                    style="@style/SettingsAction"
+                    android:text="@string/settings_action_check" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

@@ -66,6 +66,28 @@
         <item name="android:tint">@color/hp_text_secondary</item>
     </style>
 
+    <!-- Acting rows say what they do; navigating rows get a chevron. That one
+         rule is why every tappable row looks tappable. -->
+    <style name="SettingsAction">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">12dp</item>
+        <item name="android:textColor">@color/hp_accent_teal</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+    <style name="SettingsFooter">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:paddingBottom">12dp</item>
+        <item name="android:textColor">@color/hp_text_secondary</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:lineSpacingExtra">2dp</item>
+    </style>
+
     <style name="SettingsHint">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
