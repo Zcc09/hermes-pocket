@@ -264,6 +264,57 @@ grep -q "hermes-replies" notif.txt \
 
 adb_ forward --remove tcp:$HOST_PORT > /dev/null 2>&1 || true
 
+echo "== 8. settings =="
+# The gear in the session bar is the only always-reachable entry. Tap it the way
+# a user would, then assert the screen it leads to.
+timeout 90 adb shell uiautomator dump /sdcard/ui-settings.xml > /dev/null 2>&1 || true
+adb_ pull /sdcard/ui-settings.xml settings-0.xml > /dev/null 2>&1 || true
+if grep -q 'content-desc="Settings"' settings-0.xml; then
+  pass "the session bar exposes a Settings control"
+  GEAR=$(python3 - <<'PY'
+import re
+xml = open("settings-0.xml", encoding="utf-8").read()
+m = re.search(r'content-desc="Settings"[^>]*?bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', xml)
+if not m:
+    m = re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"[^>]*?content-desc="Settings"', xml)
+if m:
+    x1, y1, x2, y2 = map(int, m.groups())
+    print((x1 + x2) // 2, (y1 + y2) // 2)
+PY
+)
+  if [ -n "$GEAR" ]; then
+    adb_ shell input tap $GEAR > /dev/null 2>&1 || true
+    sleep 3
+  else
+    fail "found the Settings control but not its position"
+  fi
+else
+  fail "no Settings control on the main screen"
+fi
+
+timeout 90 adb shell uiautomator dump /sdcard/ui-settings.xml > /dev/null 2>&1 || true
+adb_ pull /sdcard/ui-settings.xml settings.xml > /dev/null 2>&1 || true
+for label in "Settings" "Connection" "Notifications" "Device control" "Version"; do
+  grep -q "text=\"$label\"" settings.xml \
+    && pass "settings shows $label" \
+    || fail "settings is missing $label"
+done
+grep -q 'text="http' settings.xml \
+  && pass "settings shows the server address it is pointed at" \
+  || fail "settings does not show the server address"
+adb_ exec-out screencap -p > "$SHOTS/03-settings.png" 2>/dev/null || true
+
+python3 - <<'PY' || true
+import re
+xml = open("settings.xml", encoding="utf-8").read()
+rows = re.findall(r'<node[^>]*?bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"[^>]*?>', xml)
+heights = sorted({int(m[3]) - int(m[1]) for m in rows})
+print("distinct node heights:", heights[:12])
+PY
+
+adb_ shell input keyevent KEYCODE_BACK > /dev/null 2>&1 || true
+sleep 2
+
 echo "== screenshots =="
 ls -la "$SHOTS" || true
 

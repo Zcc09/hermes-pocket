@@ -227,7 +227,7 @@ POST /v1/notify
 Two suppressions are deliberate: nothing is posted while the app is in front
 (you are already reading it — pass `"force": true` to override, which is what
 the app's test button does), and nothing is posted if you turned **Reply
-notifications** off on the device-control screen. A refusal comes back as a
+notifications** off on the Settings screen. A refusal comes back as a
 normal 200 with `posted: false`, so the agent can tell "quiet by choice" from
 "the bridge is down". Body is capped at 400 characters and title at 64; the tag
 makes successive replies replace each other instead of stacking.

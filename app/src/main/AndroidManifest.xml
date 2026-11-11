@@ -46,6 +46,11 @@
             android:resource="@xml/shortcuts" />
 
         <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:label="@string/settings_title" />
+
+        <activity
             android:name=".DeviceControlActivity"
             android:exported="false"
             android:label="@string/bridge_title" />

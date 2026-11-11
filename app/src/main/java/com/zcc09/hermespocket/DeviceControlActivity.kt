@@ -3,7 +3,6 @@ package com.zcc09.hermespocket
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.Manifest
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -15,8 +14,6 @@ import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -42,8 +39,6 @@ class DeviceControlActivity : ComponentActivity() {
 
     private lateinit var config: BridgeConfig
     private lateinit var switch: Switch
-    private lateinit var notifySwitch: Switch
-    private lateinit var notificationPermission: ActivityResultLauncher<String>
     private lateinit var state: TextView
     private lateinit var address: TextView
     private lateinit var token: TextView
@@ -60,13 +55,7 @@ class DeviceControlActivity : ComponentActivity() {
 
         config = BridgeConfig(this)
         switch = findViewById(R.id.switch_control)
-        notifySwitch = findViewById(R.id.switch_notify)
-        notificationPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            if (!granted) {
-                Toast.makeText(this, R.string.notify_permission_needed, Toast.LENGTH_LONG).show()
-            }
-            render()
-        }
+
         state = findViewById(R.id.text_state)
         address = findViewById(R.id.text_address)
         token = findViewById(R.id.text_token)
@@ -84,14 +73,9 @@ class DeviceControlActivity : ComponentActivity() {
             render()
         }
 
-        notifySwitch.setOnCheckedChangeListener { _, checked ->
-            config.replyNotifications = checked
-            if (checked && !Notifier.canPost(this)) {
-                notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
-            Log.i(TAG, "NOTIFY switch=$checked")
+        findViewById<View>(R.id.link_settings).setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
         }
-        findViewById<View>(R.id.button_test_notify).setOnClickListener { sendTestNotification() }
         findViewById<View>(R.id.button_copy).setOnClickListener { copyPairing() }
         findViewById<View>(R.id.button_accessibility).setOnClickListener {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
@@ -170,16 +154,6 @@ class DeviceControlActivity : ComponentActivity() {
             }
         }
 
-        notifySwitch.setOnCheckedChangeListener(null)
-        notifySwitch.isChecked = config.replyNotifications
-        notifySwitch.setOnCheckedChangeListener { _, checked ->
-            config.replyNotifications = checked
-            if (checked && !Notifier.canPost(this)) {
-                notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
-            Log.i(TAG, "NOTIFY switch=$checked")
-        }
-
         val group = findViewById<RadioGroup>(R.id.tier_group)
         val wanted = when (config.tierPreference) {
             "root" -> R.id.radio_root
@@ -188,26 +162,6 @@ class DeviceControlActivity : ComponentActivity() {
             else -> R.id.radio_auto
         }
         if (group.checkedRadioButtonId != wanted) group.check(wanted)
-    }
-
-    private fun sendTestNotification() {
-        if (!Notifier.canPost(this)) {
-            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-            return
-        }
-        val result = Notifier.post(
-            this,
-            getString(R.string.notify_test_title),
-            getString(R.string.notify_test_body),
-            tag = "test",
-            force = true,
-        )
-        Toast.makeText(
-            this,
-            if (result.posted) R.string.notify_test_sent else R.string.notify_test_off,
-            Toast.LENGTH_SHORT,
-        ).show()
-        Log.i(TAG, "NOTIFY test posted=${result.posted} reason=${result.reason}")
     }
 
     private fun copyPairing() {

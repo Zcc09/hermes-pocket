@@ -69,6 +69,9 @@ class MainActivity : ComponentActivity() {
         /** Launcher shortcut: reload the page (pull-to-refresh is gone by design). */
         const val ACTION_RELOAD = "com.zcc09.hermespocket.RELOAD"
 
+        /** Settings fires this so cookie clearing keeps one implementation. */
+        const val ACTION_CLEAR_SESSION = "com.zcc09.hermespocket.CLEAR_SESSION"
+
         /** Test hook: `am start … -e server https://example.com` sets the server once. */
         private const val EXTRA_SERVER = "server"
 
@@ -149,6 +152,7 @@ class MainActivity : ComponentActivity() {
             Log.i(TAG, "BRIDGE started by test hook")
         }
 
+        renderHost()
         Updater(this).start()
     }
 
@@ -160,6 +164,10 @@ class MainActivity : ComponentActivity() {
         }
         if (intent.action == ACTION_RELOAD) {
             reloadPage()
+            return
+        }
+        if (intent.action == ACTION_CLEAR_SESSION) {
+            clearSession()
             return
         }
         val data = intent.data ?: return
@@ -373,6 +381,9 @@ class MainActivity : ComponentActivity() {
         findViewById<View>(R.id.error_change_server).setOnClickListener {
             showSetup(serverUrl)
         }
+        findViewById<View>(R.id.button_settings).setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
         hintBar.setOnClickListener { openInBrowser(currentUrl()) }
         // The hint bar is only shown while a sign-in is under way, which is
         // exactly where a stale or wrong session shows up. Long-press it to
@@ -444,6 +455,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun startLoading(url: String) {
+        renderHost()
         serverUrl = url
         hideSetup()
         hideErrorPanel()
@@ -466,6 +478,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun hideSetup() {
+        renderHost()
         setupPanel.visibility = View.GONE
         webView.visibility = View.VISIBLE
     }
@@ -473,22 +486,20 @@ class MainActivity : ComponentActivity() {
     // endregion
 
     private fun showSessionMenu() {
+        // Settings owns the server, the sign-out and device control; the menu
+        // keeps only what belongs to the page in front of you.
         val items = arrayOf(
             getString(R.string.menu_reload),
-            getString(R.string.menu_change_server),
-            getString(R.string.open_in_browser),
-            getString(R.string.shortcut_device_control),
-            getString(R.string.clear_session)
+            getString(R.string.menu_settings),
+            getString(R.string.open_in_browser)
         )
         AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
             .setTitle(R.string.session_title)
             .setItems(items) { _, which ->
                 when (which) {
                     0 -> reloadPage()
-                    1 -> showSetup(serverUrl)
-                    2 -> openInBrowser(currentUrl())
-                    3 -> startActivity(Intent(this, DeviceControlActivity::class.java))
-                    else -> clearSession()
+                    1 -> startActivity(Intent(this, SettingsActivity::class.java))
+                    else -> openInBrowser(currentUrl())
                 }
             }
             .show()
@@ -522,6 +533,12 @@ class MainActivity : ComponentActivity() {
         errorPanel.visibility = View.VISIBLE
         webView.visibility = View.GONE
         progressBar.visibility = View.GONE
+    }
+
+    /** The session bar always says which server this app is pointed at. */
+    private fun renderHost() {
+        val view = findViewById<TextView>(R.id.text_host)
+        view.text = store.get()?.toString() ?: getString(R.string.settings_server_none)
     }
 
     private fun hideErrorPanel() {

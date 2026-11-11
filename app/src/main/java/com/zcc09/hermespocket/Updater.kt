@@ -37,6 +37,15 @@ class Updater(private val activity: Activity) {
     private val mainHandler = Handler(Looper.getMainLooper())
 
     /**
+     * User-initiated check: ignores the 10-minute throttle that keeps automatic
+     * checks quiet, because a tap on "Check for updates" is an explicit ask.
+     */
+    fun checkNow() {
+        runCatching { store.setLastUpdateCheck(0L) }
+        start()
+    }
+
+    /**
      * Starts the check if the last check was more than 10 minutes ago.
      * Safe to call from the main thread; it returns immediately.
      */
