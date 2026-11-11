@@ -57,6 +57,7 @@ class HttpBridge(
         // Materialise the token now, not on the first request: the value the app
         // shows the user must be the value in force from the moment it listens.
         runCatching { config.token }
+        runCatching { Notifier.ensureChannel(context) }
         return runCatching {
             val socket = ServerSocket(config.port, 16, null)
             serverSocket = socket
@@ -208,6 +209,7 @@ class HttpBridge(
                 request.method == "POST" && request.path == "/v1/input" -> input(request.body)
                 request.method == "POST" && request.path == "/v1/app" -> apps(request.body)
                 request.method == "POST" && request.path == "/v1/intent" -> intent(request.body)
+                request.method == "POST" && request.path == "/v1/notify" -> notifyUser(request.body)
                 else -> json(404, JSONObject().put("ok", false).put("error", "no such route ${request.method} ${request.path}"))
             }
         } catch (t: Throwable) {
@@ -468,6 +470,28 @@ class HttpBridge(
         }.getOrElse {
             json(400, JSONObject().put("ok", false).put("error", "nothing accepted the intent: ${it.message}"))
         }
+    }
+
+    /**
+     * Posts a notification on the phone. The agent's gateway hook calls this when
+     * a reply goes out, so the user sees it even when the app is in the background.
+     * A refusal is a normal answer (`posted: false` plus a reason), not an error —
+     * the phone staying quiet must never look like a broken bridge.
+     */
+    private fun notifyUser(body: ByteArray): Response {
+        val json = JSONObject(String(body, Charsets.UTF_8))
+        val title = json.optString("title").ifBlank { "Hermes" }
+        val text = json.optString("body")
+        if (text.isBlank()) {
+            return json(400, JSONObject().put("ok", false).put("error", "body is required"))
+        }
+        val tag = json.optString("tag").takeIf { it.isNotBlank() }
+        val force = json.optBoolean("force", false)
+        val result = Notifier.post(context, title, text, tag, force)
+        return json(200, JSONObject()
+            .put("ok", true)
+            .put("posted", result.posted)
+            .put("reason", result.reason ?: JSONObject.NULL))
     }
 
     // endregion

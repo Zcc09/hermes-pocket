@@ -33,6 +33,16 @@
     <string name="bridge_open_accessibility">Open accessibility settings</string>
     <string name="bridge_test">Test this phone</string>
     <string name="bridge_probing">Checking what this phone allows…</string>
+    <string name="notify_switch_label">Reply notifications</string>
+    <string name="notify_switch_hint">Show a notification when Hermes answers, while the app is in the background.</string>
+    <string name="notify_test">Send a test notification</string>
+    <string name="notify_test_title">Hermes</string>
+    <string name="notify_test_body">Test notification from Hermes Pocket. If you can read this, replies will reach you here.</string>
+    <string name="notify_test_sent">Test notification sent</string>
+    <string name="notify_test_off">Notifications are off for Hermes Pocket — allow them first</string>
+    <string name="notify_permission_needed">Allow notifications for Hermes Pocket to see replies.</string>
+    <string name="notify_channel_name">Hermes replies</string>
+    <string name="notify_channel_description">A notification each time Hermes answers while the app is in the background.</string>
     <string name="bridge_new_token">New token</string>
     <string name="bridge_token_regenerated">New token generated. Update your agent, the old one no longer works.</string>
     <string name="bridge_guide">Full steps for root, Shizuku and app-only access are in docs/DEVICE-CONTROL.md in the app\'s repository.</string>

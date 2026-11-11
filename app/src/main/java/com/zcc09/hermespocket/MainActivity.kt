@@ -168,8 +168,14 @@ class MainActivity : ComponentActivity() {
         webView.loadUrl(data.toString())
     }
 
+    override fun onResume() {
+        super.onResume()
+        com.zcc09.hermespocket.bridge.Notifier.appVisible = true
+    }
+
     override fun onPause() {
         super.onPause()
+        com.zcc09.hermespocket.bridge.Notifier.appVisible = false
         try {
             CookieManager.getInstance().flush()
         } catch (t: Throwable) {

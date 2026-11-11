@@ -235,6 +235,33 @@ fi
 APPS_JSON=$(curl -s -m 10 -H "$auth" -H 'Content-Type: application/json' -d '{"action":"list"}' "$BASE/v1/app")
 echo "$APPS_JSON" | grep -q '"apps"' && pass "app list returned" || fail "app list failed"
 
+echo "== 7. reply notifications =="
+# The user grants this in Settings; on the emulator the equivalent is pm grant.
+adb_ shell pm grant "$PKG" android.permission.POST_NOTIFICATIONS > /dev/null 2>&1 || true
+FG_JSON=$(curl -s -m 8 -H "$auth" -H 'Content-Type: application/json' \
+  -d '{"title":"Hermes","body":"foreground probe"}' "$BASE/v1/notify")
+echo "$FG_JSON"
+echo "$FG_JSON" | grep -q '"reason":"foreground"' \
+  && pass "an unforced notification is suppressed while the app is in front" \
+  || fail "foreground suppression did not report itself: $(echo "$FG_JSON" | head -c 160)"
+
+NOTIFY_JSON=$(curl -s -m 8 -H "$auth" -H 'Content-Type: application/json' \
+  -d '{"title":"Hermes","body":"bridge-notify-probe","tag":"e2e","force":true}' "$BASE/v1/notify")
+echo "$NOTIFY_JSON"
+echo "$NOTIFY_JSON" | grep -q '"posted":true' \
+  && pass "a forced notification was posted" \
+  || fail "notification was not posted: $(echo "$NOTIFY_JSON" | head -c 160)"
+
+sleep 2
+timeout 90 adb shell dumpsys notification --noredact > notif.txt 2>/dev/null || true
+grep -q "bridge-notify-probe" notif.txt \
+  && pass "the notification is really on the device (dumpsys)" \
+  || fail "nothing on the device mentions bridge-notify-probe"
+grep -q "hermes-replies" notif.txt \
+  && pass "it was posted on the replies channel" \
+  || echo "WARN: replies channel not named in dumpsys"
+
+
 adb_ forward --remove tcp:$HOST_PORT > /dev/null 2>&1 || true
 
 echo "== screenshots =="

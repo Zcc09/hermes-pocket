@@ -211,3 +211,28 @@ and `--max <width>` instead. Run `python tools/pocket.py --help` for the full li
 The agent on your computer has to be on the same network as the phone. A
 Hermes instance running on a server elsewhere, or on a VPN that does not route
 to the phone's subnet, cannot reach `192.168.x.x`.
+
+## Notifications
+
+The same bridge can raise a notification, which is how a reply reaches you when
+the app is not on screen:
+
+```
+POST /v1/notify
+{"title": "Hermes", "body": "…", "tag": "<session id>", "force": false}
+-> {"ok": true, "posted": true}
+-> {"ok": true, "posted": false, "reason": "foreground" | "disabled" | "permission"}
+```
+
+Two suppressions are deliberate: nothing is posted while the app is in front
+(you are already reading it — pass `"force": true` to override, which is what
+the app's test button does), and nothing is posted if you turned **Reply
+notifications** off on the device-control screen. A refusal comes back as a
+normal 200 with `posted: false`, so the agent can tell "quiet by choice" from
+"the bridge is down". Body is capped at 400 characters and title at 64; the tag
+makes successive replies replace each other instead of stacking.
+
+To have Hermes do this automatically on every reply, install the gateway hook in
+[`integrations/phone-notify`](../integrations/phone-notify/README.md): it
+subscribes to `agent:end` and posts the reply through this endpoint. Gateway
+hooks load at startup, so the install ends with `hermes gateway restart`.

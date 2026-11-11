@@ -29,6 +29,11 @@ class BridgeConfig(context: Context) {
         get() = prefs.getString(KEY_TIER, "auto") ?: "auto"
         set(value) = prefs.edit().putString(KEY_TIER, value).apply()
 
+    /** Post "Hermes replied" notifications to this phone. On unless the user turns it off. */
+    var replyNotifications: Boolean
+        get() = prefs.getBoolean(KEY_NOTIFY, true)
+        set(value) = prefs.edit().putBoolean(KEY_NOTIFY, value).apply()
+
     var token: String
         get() {
             val existing = prefs.getString(KEY_TOKEN, null)
@@ -55,5 +60,6 @@ class BridgeConfig(context: Context) {
         private const val KEY_PORT = "port"
         private const val KEY_TOKEN = "token"
         private const val KEY_TIER = "tier"
+        private const val KEY_NOTIFY = "reply_notifications"
     }
 }
