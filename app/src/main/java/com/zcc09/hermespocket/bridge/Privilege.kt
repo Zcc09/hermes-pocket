@@ -145,14 +145,25 @@ class Privilege(private val context: Context) {
      * A live binder is proof enough on its own.
      */
     /**
-     * `checkPermission` answers PERMISSION_DENIED for a package that is not
-     * installed instead of throwing, so it cannot prove presence — reading the
-     * package does, and that is what "Installed" claims.
+     * Two positive proofs, either of which is enough:
+     * - reading the package works because the manifest declares it in `<queries>`
+     *   (API 30+ hides unlisted packages from `getPackageInfo`);
+     * - a GRANTED API permission can only exist if something defines it, which
+     *   covers older APIs and any visibility quirk.
+     * A DENIED answer proves nothing: `checkPermission` returns PERMISSION_DENIED
+     * for a package that is not installed instead of throwing.
      */
-    private fun shizukuInstalled(): Boolean = runCatching {
-        context.packageManager.getPackageInfo(SHIZUKU_PACKAGE, 0)
-        true
-    }.getOrDefault(false)
+    private fun shizukuInstalled(): Boolean {
+        val present = runCatching {
+            context.packageManager.getPackageInfo(SHIZUKU_PACKAGE, 0)
+            true
+        }.getOrDefault(false)
+        if (present) return true
+        return runCatching {
+            context.packageManager.checkPermission(SHIZUKU_API_PERMISSION, SHIZUKU_PACKAGE) ==
+                PackageManager.PERMISSION_GRANTED
+        }.getOrDefault(false)
+    }
 
     /**
      * Asks Shizuku for its permission. Shizuku shows its own confirmation
