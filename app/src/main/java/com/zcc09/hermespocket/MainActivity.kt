@@ -11,6 +11,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.os.Message
 import android.os.Environment
 import android.util.Log
 import android.view.View
@@ -261,18 +262,27 @@ class MainActivity : ComponentActivity() {
 
         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
             val url = request.url
-            if (isInternalHost(url.host?.lowercase().orEmpty())) {
-                // The user's own server always stays in place.
-                return false
-            }
-            // A redirect (sign-in, SSO, a payment step) must not be interrupted,
-            // so only a link the person actually tapped leaves the app.
-            if (!request.hasGesture()) return false
+            trackSignIn(url)
+            val redirect = android.os.Build.VERSION.SDK_INT >= 24 && request.isRedirect
+            val leaves = NavigationPolicy.leavesApp(
+                url = url.toString(),
+                serverHost = serverUrlHost(),
+                hasGesture = request.hasGesture(),
+                isRedirect = redirect,
+                signInInFlight = signInInFlight,
+            )
+            Log.i(
+                TAG,
+                "NAV host=${url.host} gesture=${request.hasGesture()} redirect=$redirect " +
+                    "signIn=$signInInFlight leaves=$leaves",
+            )
+            if (!leaves) return false
             openInBrowser(url.toString())
             return true
         }
 
         override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
+            trackSignIn(Uri.parse(url))
             hideErrorPanel()
             progressBar.visibility = View.VISIBLE
             progressBar.progress = 0
@@ -294,6 +304,34 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun buildWebChromeClient(): WebChromeClient = object : WebChromeClient() {
+
+        /**
+         * A popup is how some sign-in providers open their step. Without this the
+         * click looks dead; with it the popup's first URL loads in the same
+         * WebView, so the whole round trip keeps one cookie jar.
+         */
+        override fun onCreateWindow(
+            view: WebView,
+            isDialog: Boolean,
+            isUserGesture: Boolean,
+            resultMsg: Message,
+        ): Boolean {
+            val transport = resultMsg.obj as? WebView.WebViewTransport ?: return false
+            val probe = WebView(this@MainActivity)
+            probe.webViewClient = object : WebViewClient() {
+                override fun shouldOverrideUrlLoading(inner: WebView, request: WebResourceRequest): Boolean {
+                    Log.i(TAG, "NAV popup -> ${request.url}")
+                    trackSignIn(request.url)
+                    webView.loadUrl(request.url.toString())
+                    inner.destroy()
+                    return true
+                }
+            }
+            transport.webView = probe
+            resultMsg.sendToTarget()
+            return true
+        }
+
 
         override fun onProgressChanged(view: WebView, progress: Int) {
             progressBar.progress = progress
@@ -537,6 +575,30 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
+     * True from the moment a sign-in starts until a page of the app itself comes
+     * back. While it is set nothing may leave for the browser, because the next
+     * hop of the round trip needs the cookie only this WebView has.
+     */
+    private var signInInFlight = false
+
+    private fun serverUrlHost(): String? =
+        store.get()?.let { runCatching { java.net.URI(it).host?.lowercase() }.getOrNull() }
+
+    private fun trackSignIn(url: Uri) {
+        val host = url.host?.lowercase().orEmpty()
+        val serverHost = serverUrlHost() ?: return
+        if (host != serverHost) return
+        val path = url.path
+        signInInFlight = if (NavigationPolicy.isSignInPath(path)) {
+            Log.i(TAG, "SIGNIN started path=$path")
+            true
+        } else {
+            if (signInInFlight) Log.i(TAG, "SIGNIN back on the app at path=$path")
+            false
+        }
+    }
+
+    /**
      * The session bar always says which server this app is pointed at. A plain
      * http deployment is called out, because on a phone "no lock" is the whole
      * difference between the two and the host alone would hide it.
@@ -579,7 +641,12 @@ class MainActivity : ComponentActivity() {
      * screen, which is exactly where a WebView can get stuck.
      */
     private fun updateHintBar(url: String) {
+        // While a sign-in round trip is live the app holds the whole chain, so
+        // offering "open in your browser" here would hand the flow to a browser
+        // that has none of its cookies. The bar returns for foreign pages the
+        // app is merely showing, where the escape hatch is useful.
         val show = runCatching {
+            if (signInInFlight) return@runCatching false
             val host = Uri.parse(url).host?.lowercase().orEmpty()
             host.isNotEmpty() && !isInternalHost(host)
         }.getOrDefault(false)
