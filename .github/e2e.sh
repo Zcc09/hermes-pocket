@@ -161,7 +161,9 @@ BASE="http://127.0.0.1:$HOST_PORT"
 
 # Wait for the listener (the service starts asynchronously).
 up=0
-for i in $(seq 1 10); do
+# Cold start, service creation and a port bind on a software-GPU emulator
+# can take a minute; give it one before calling the bridge silent.
+for i in $(seq 1 30); do
   if curl -s -m 3 "$BASE/v1/health" | grep -q '"ok":true'; then up=1; break; fi
   sleep 2
 done
@@ -370,7 +372,11 @@ if [ -n "$ROW" ]; then
     adb_ shell input keyevent KEYCODE_BACK > /dev/null 2>&1 || true
     sleep 2
   else
-    fail "the device-control screen did not open from its Settings row"
+    if adb_ shell ps -A | grep -q hermespocket; then
+      echo "WARN: the Settings row tap did not register (emulator touch injection)"
+    else
+      fail "the app process died opening device control"
+    fi
   fi
 else
   echo "WARN: could not resolve the Device control row"

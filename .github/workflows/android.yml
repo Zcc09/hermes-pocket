@@ -143,8 +143,9 @@ jobs:
         if: always()
         run: |
           adb devices || true
-          adb logcat -d -v threadtime > logcat-full.txt 2>&1 || true
-          adb logcat -d -b crash > logcat-crash.txt 2>&1 || true
+          # A wedged emulator must not hang this step for an hour.
+          timeout 120 adb logcat -d -v threadtime > logcat-full.txt 2>&1 || true
+          timeout 60 adb logcat -d -b crash > logcat-crash.txt 2>&1 || true
           wc -l logcat-full.txt logcat-crash.txt || true
           ls -la logcat-full.txt 2>/dev/null || true
 
