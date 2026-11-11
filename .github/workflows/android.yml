@@ -142,7 +142,9 @@ jobs:
       - name: Emulator logcat
         if: always()
         run: |
-          timeout 120 adb logcat -d > logcat-full.txt 2>/dev/null || true
+          adb devices || true
+          timeout 120 adb logcat -d -b all -t 40000 > logcat-full.txt 2>&1 || true
+          wc -l logcat-full.txt || true
           ls -la logcat-full.txt 2>/dev/null || true
 
       - uses: actions/upload-artifact@v7
