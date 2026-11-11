@@ -1,0 +1,4 @@
+name: phone-notify
+description: Push a "Hermes replied" notification to the Hermes Pocket app on agent:end
+events:
+  - agent:end
