@@ -45,6 +45,9 @@ app adds a dark, branded frame around it:
 - Sign-in stays in the app: only a tapped link to another site opens the
   browser, redirects and every hop of a live sign-in stay put, so the PKCE
   cookie the callback needs is still there. Popups land in the same WebView
+- One mark everywhere: a white H on black, drawn from the same 24-unit geometry
+  as the notification glyph, so the launcher tile, the notification and the
+  status bar all show the same letter
 - Background self-update check against the GitHub releases API
 - Long-press the bottom hint bar for the session menu: Change server, Open in
   browser, or Clear session (cookies, storage, cache) — no need to clear app
