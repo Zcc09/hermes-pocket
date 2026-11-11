@@ -280,14 +280,22 @@ echo "== 8. settings =="
 adb_ shell cmd statusbar collapse > /dev/null 2>&1 || true
 adb_ shell am start -n "$PKG/.MainActivity" > /dev/null 2>&1 || true
 sleep 3
-timeout 90 adb shell uiautomator dump /sdcard/ui-settings.xml > /dev/null 2>&1 || true
-adb_ pull /sdcard/ui-settings.xml settings-0.xml > /dev/null 2>&1 || true
+GEAR=""
+# The window can still be transitioning here, so give the dump three tries
+# instead of asserting on whichever frame happened to be on screen first.
+for _attempt in 1 2 3; do
+  timeout 90 adb shell uiautomator dump /sdcard/ui-settings.xml > /dev/null 2>&1 || true
+  adb_ pull /sdcard/ui-settings.xml settings-0.xml > /dev/null 2>&1 || true
+  grep -q 'content-desc="Settings"' settings-0.xml || { sleep 3; continue; }
+  GEAR=$(python3 .github/settings_tap.py settings-0.xml --package "$PKG" --debug)
+  [ -n "$GEAR" ] && break
+  sleep 3
+done
 if grep -q 'content-desc="Settings"' settings-0.xml; then
   pass "the session bar exposes a Settings control"
 else
   fail "no Settings control on the main screen"
 fi
-GEAR=$(python3 .github/settings_tap.py settings-0.xml --package "$PKG" --debug)
 
 OPENED=0
 if [ -n "$GEAR" ]; then
