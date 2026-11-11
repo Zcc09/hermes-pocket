@@ -60,31 +60,46 @@ wireless debugging. Shizuku is a separate helper app that starts a service
 running with shell privileges (`uid=2000`). You start that service once, and
 apps you authorize can borrow it.
 
-1. Install Shizuku from the Play Store, or from
-   `github.com/RikkaApps/Shizuku/releases`.
-2. On Android 11 or newer, enable **Developer options -> Wireless debugging**.
-   In Shizuku choose **Start by connecting to a computer** (labelled "Start
-   via adb" on some versions) and run the two commands it shows, which look
-   like:
+The **Shizuku** section of device control connects and checks, so you never have
+to guess which step is missing. Its status line is three facts, each from its
+own call:
 
-   ```bash
-   adb pair 192.168.1.20:37123 482913
-   adb connect 192.168.1.20:5555
-   ```
+- `Installed · running · allowed` — ready. Choose **Shizuku (adb level)** under
+  Access level, press **Test**, and commands run as the shell user.
+- `Installed · running · not allowed` — the service is there and Hermes Pocket
+  has no permission yet. Press **Connect Shizuku**.
+- `Installed · not running` — the app is there, its service is not. Open Shizuku
+  and start it.
+- `Not installed` — press **Connect Shizuku**; it opens
+  <https://shizuku.rikka.app/download/> in your browser.
 
-   The pairing port, code and connect port are different each time; copy them
-   from the Shizuku screen, do not reuse the numbers above.
+The three facts are the package check (`moe.shizuku.privileged.api`), the
+service binder, and Shizuku's own permission check. Nothing is inferred from the
+access level you picked, so the radio group never claims a tier the phone cannot
+deliver.
 
-3. If wireless debugging is not available, connect the phone over USB once and
-   run:
+Steps, on a phone without root:
+
+1. **Developer options -> Wireless debugging.** The **Wireless debugging
+   settings** row opens that screen. If it lands on the general settings screen,
+   Developer options are still off: open **About phone** and tap **Build number**
+   seven times first.
+2. **Install Shizuku and open it.** The **Open Shizuku** row starts it. Install
+   from the Play Store or from <https://shizuku.rikka.app/download/>.
+3. **Start the service.** In Shizuku, tap **Start via Wireless debugging** and
+   pair with the pairing code and port Android shows. Or start it once from a
+   computer over USB:
 
    ```bash
    adb shell sh /storage/emulated/0/Android/data/moe.shizuku.privileged.api/start.sh
    ```
 
-4. Open Hermes Pocket, enable device control and press **Test**. Shizuku shows
-   an authorization prompt for Hermes Pocket; allow it. Press **Test** again if
-   the first run fails.
+   A computer can also do it over the network; Shizuku shows those two commands,
+   and the ports differ every time, so copy them from that screen rather than
+   reusing older ones.
+
+Then press **Connect Shizuku** and allow the prompt Shizuku shows. A refusal is
+reported plainly and changes nothing: the tier stays where it was.
 
 Limit: this is shell, not root. Most of `/sdcard` and the system binaries are
 reachable, but other apps' private data under `/data/data` is not, and neither
@@ -92,7 +107,12 @@ is anything that requires root to mount or modify.
 
 Shizuku stops when the phone reboots. After each reboot you must start it
 again the same way, unless it was started by a computer or by root (root can
-keep it running on boot).
+keep it running on boot). The **Test** button and the status line tell you which
+of those two states you are in.
+
+Taps and screenshots are not part of this tier's gift: they still come from the
+Hermes Pocket accessibility service, which is why the section above it matters on
+a phone without root.
 
 ## Tier 3: none (app only)
 
@@ -172,9 +192,10 @@ update `POCKET_TOKEN`. Watch for a trailing newline or a smart quote picked up
 by copy-paste; the token is plain ASCII.
 
 **403 from Shizuku.** Shizuku is running but Hermes Pocket is not authorized,
-or the authorization was granted to an older install. Open Shizuku ->
-**Authorized applications**, revoke Hermes Pocket, then press **Test** in
-Hermes Pocket and allow the prompt again.
+or the authorization was granted to an older install. The status line in device
+control says `Installed · running · not allowed` in that case. Open Shizuku ->
+**Authorized applications**, revoke Hermes Pocket, then press **Connect Shizuku**
+in Hermes Pocket and allow the prompt again.
 
 **Gestures do nothing.** The accessibility service is off. Settings ->
 Accessibility -> Hermes Pocket -> On, then retry.

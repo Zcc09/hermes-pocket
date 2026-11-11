@@ -99,4 +99,22 @@
     <string name="setup_connect">Connect</string>
     <string name="setup_helper">Private addresses are opened over http, public ones over https. Add the port if your server needs one.</string>
     <string name="setup_error">That is not an address the app can open. Try 192.168.1.20:9120 or https://example.com</string>
+    <string name="bridge_shizuku_title">Shizuku</string>
+    <string name="bridge_shizuku_state_missing">Not installed</string>
+    <string name="bridge_shizuku_state_stopped">Installed · not running</string>
+    <string name="bridge_shizuku_state_denied">Installed · running · not allowed</string>
+    <string name="bridge_shizuku_state_ready">Installed · running · allowed</string>
+    <string name="bridge_shizuku_body">Shizuku is a free helper app that lends this one shell access, so the bridge can use input, pm and settings without root. Install it once, start its service after each reboot, then allow Hermes Pocket here.</string>
+    <string name="bridge_shizuku_steps">1. Turn on Developer options, then Wireless debugging in Settings.\n2. Install Shizuku and open it.\n3. In Shizuku, tap Start via Wireless debugging and pair. Or start it once from a computer with:\nadb shell sh /storage/emulated/0/Android/data/moe.shizuku.privileged.api/start.sh</string>
+    <string name="bridge_shizuku_connect">Connect Shizuku</string>
+    <string name="bridge_shizuku_open">Open Shizuku</string>
+    <string name="bridge_shizuku_debugging">Wireless debugging settings</string>
+    <string name="bridge_shizuku_limits">Shell level only: commands run as uid 2000, which reaches input, pm and settings but cannot write /data. Shizuku stops on reboot and needs starting again. Taps and screenshots still need this app\'s accessibility service.</string>
+    <string name="bridge_action_open">Open</string>
+    <string name="bridge_shizuku_install_first">Shizuku is not installed. Opening the download page.</string>
+    <string name="bridge_shizuku_start_first">Shizuku is installed but not running. Open Shizuku and start it, then try again.</string>
+    <string name="bridge_shizuku_granted">Shizuku allowed. Rechecking what this phone allows.</string>
+    <string name="bridge_shizuku_denied">Permission declined. Nothing changes until Shizuku allows it.</string>
+    <string name="bridge_shizuku_already_allowed">Shizuku is already allowed for Hermes Pocket.</string>
+    <string name="bridge_shizuku_no_settings">No settings screen to open on this device.</string>
 </resources>

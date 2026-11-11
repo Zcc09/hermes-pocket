@@ -37,11 +37,37 @@ data class ShellResult(
     val truncated: Boolean = false,
 )
 
+/**
+ * What the Shizuku helper can do right now, each fact from its own call:
+ * the package check proves the app is installed, `pingBinder` proves its
+ * service answers, and `checkSelfPermission` proves this app is allowed.
+ *
+ * `running` false means the other two facts are not answerable, so the UI
+ * shows the running fact alone rather than guessing at permission.
+ */
+data class ShizukuState(
+    val installed: Boolean = false,
+    val running: Boolean = false,
+    val granted: Boolean = false,
+) {
+    /** Shizuku can actually lend shell access. */
+    val ready: Boolean get() = running && granted
+}
+
 class Privilege(private val context: Context) {
 
     companion object {
         private const val TAG = "HermesPocket"
         private const val MAX_OUTPUT_BYTES = 256 * 1024
+
+        /** The Shizuku manager app; its service is what lends shell access. */
+        const val SHIZUKU_PACKAGE = "moe.shizuku.privileged.api"
+
+        /** The permission Shizuku itself defines for client apps. */
+        const val SHIZUKU_API_PERMISSION = "moe.shizuku.manager.permission.API_V23"
+
+        /** Official download page, for phones without the Shizuku app. */
+        const val SHIZUKU_DOWNLOAD_URL = "https://shizuku.rikka.app/download/"
     }
 
     @Volatile
@@ -79,14 +105,80 @@ class Privilege(private val context: Context) {
         finished && out.contains("uid=0")
     }.getOrDefault(false)
 
-    private fun shizukuAvailable(): Boolean = runCatching {
-        val binder = Class.forName("rikka.shizuku.Shizuku")
-        val ping = binder.getMethod("pingBinder").invoke(null) as Boolean
-        val granted = binder.getMethod("checkSelfPermission").invoke(null) as Int
-        ping && granted == PackageManager.PERMISSION_GRANTED
-    }.getOrDefault(false)
+    private fun shizukuAvailable(): Boolean {
+        val state = shizukuState()
+        return state.running && state.granted
+    }
 
     private fun canShizuku(): Boolean = shizukuAvailable()
+
+    // endregion
+
+    // region shizuku
+
+    /**
+     * Three facts, three calls, each one wrapped: the Shizuku API throws
+     * `IllegalStateException` while its binder is not attached, and a phone
+     * with Shizuku stopped is the normal case, not an error.
+     */
+    fun shizukuState(): ShizukuState {
+        val running = try {
+            rikka.shizuku.Shizuku.pingBinder()
+        } catch (t: Throwable) {
+            Log.w(TAG, "BRIDGE shizuku ping failed: ${t.javaClass.simpleName}")
+            false
+        }
+        val installed = running || shizukuInstalled()
+        val granted = running && try {
+            rikka.shizuku.Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+        } catch (t: Throwable) {
+            Log.w(TAG, "BRIDGE shizuku permission check failed: ${t.javaClass.simpleName}")
+            false
+        }
+        return ShizukuState(installed = installed, running = running, granted = granted)
+    }
+
+    /**
+     * Is the Shizuku app on this phone? Android 11 hides packages this app did
+     * not declare a `<queries>` entry for, but `checkPermission` resolves the
+     * package without that filter and only throws when it is genuinely absent.
+     * A live binder is proof enough on its own.
+     */
+    private fun shizukuInstalled(): Boolean = runCatching {
+        context.packageManager.checkPermission(SHIZUKU_API_PERMISSION, SHIZUKU_PACKAGE)
+    }.isSuccess
+
+    /**
+     * Asks Shizuku for its permission. Shizuku shows its own confirmation
+     * dialog; the answer arrives on the listener from [watchShizukuPermission].
+     */
+    fun requestShizukuPermission(requestCode: Int): Boolean = try {
+        rikka.shizuku.Shizuku.requestPermission(requestCode)
+        true
+    } catch (t: Throwable) {
+        Log.w(TAG, "BRIDGE shizuku requestPermission failed: ${t.javaClass.simpleName}")
+        false
+    }
+
+    /**
+     * Watches for the answer to [requestShizukuPermission]. Returns a function
+     * that unregisters the listener, or null when Shizuku refused the listener
+     * because its service is not there.
+     */
+    fun watchShizukuPermission(onResult: (granted: Boolean) -> Unit): (() -> Unit)? {
+        val listener = try {
+            rikka.shizuku.Shizuku.OnRequestPermissionResultListener { _, result ->
+                onResult(result == PackageManager.PERMISSION_GRANTED)
+            }.also { rikka.shizuku.Shizuku.addRequestPermissionResultListener(it) }
+        } catch (t: Throwable) {
+            Log.w(TAG, "BRIDGE shizuku permission listener not registered: ${t.javaClass.simpleName}")
+            return null
+        }
+        return {
+            runCatching { rikka.shizuku.Shizuku.removeRequestPermissionResultListener(listener) }
+            Unit
+        }
+    }
 
     // endregion
 

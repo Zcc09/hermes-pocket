@@ -194,6 +194,103 @@
             android:textSize="14sp" />
 
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="@string/bridge_shizuku_title"
+            android:textColor="@color/hp_text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_shizuku_state"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="@string/settings_probe_running"
+            android:textColor="@color/hp_text_secondary"
+            android:textSize="13sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:lineSpacingExtra="2dp"
+            android:text="@string/bridge_shizuku_body"
+            android:textColor="@color/hp_text_secondary"
+            android:textSize="13sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:lineSpacingExtra="4dp"
+            android:text="@string/bridge_shizuku_steps"
+            android:textColor="@color/hp_text_primary"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/button_shizuku_connect"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/hp_button_primary"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="@string/bridge_shizuku_connect"
+            android:textColor="@color/hp_background"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            style="@style/SettingsCard"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/row_open_shizuku"
+                style="@style/SettingsRow">
+
+                <TextView
+                    style="@style/SettingsLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/bridge_shizuku_open" />
+
+                <TextView
+                    style="@style/SettingsAction"
+                    android:text="@string/bridge_action_open" />
+            </LinearLayout>
+
+            <View style="@style/SettingsDivider" />
+
+            <LinearLayout
+                android:id="@+id/row_wireless_debugging"
+                style="@style/SettingsRow">
+
+                <TextView
+                    style="@style/SettingsLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/bridge_shizuku_debugging" />
+
+                <TextView
+                    style="@style/SettingsAction"
+                    android:text="@string/bridge_action_open" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:lineSpacingExtra="2dp"
+            android:text="@string/bridge_shizuku_limits"
+            android:textColor="@color/hp_text_secondary"
+            android:textSize="12sp" />
+
+        <TextView
             android:id="@+id/button_test"
             android:layout_width="match_parent"
             android:layout_height="48dp"

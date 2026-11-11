@@ -27,7 +27,13 @@ app adds a dark, branded frame around it:
   handling, and state save/restore on process death. **No** pull-to-refresh (it
   fought the transcript's own scrolling): reload from the menu or the app icon's
   shortcut instead
-- A native Settings screen, reachable from the gear in the session bar: the
+- Shizuku setup inside device control: the three facts that matter (installed,
+  running, allowed) each read from its own call, a Connect action that asks
+  Shizuku for permission or opens its download page, and the three steps for
+  starting it without root — Wireless debugging pairing, or one `adb shell sh`
+  line from a computer
+- A native Settings screen, reachable from the gear in the session bar:
+ the
   server address (handing off to the same setup panel the first launch uses),
   a connection check, sign-out, reply notifications with their Android
   permission state, the device-control entry point, and the version with a
@@ -36,6 +42,9 @@ app adds a dark, branded frame around it:
   notification, suppressed while you are already looking at the app, with an
   opt-out switch and a test button in Settings. Hermes installs
   a gateway hook (`integrations/phone-notify`) that fires it on every reply
+- Sign-in stays in the app: only a tapped link to another site opens the
+  browser, redirects and every hop of a live sign-in stay put, so the PKCE
+  cookie the callback needs is still there. Popups land in the same WebView
 - Background self-update check against the GitHub releases API
 - Long-press the bottom hint bar for the session menu: Change server, Open in
   browser, or Clear session (cookies, storage, cache) — no need to clear app

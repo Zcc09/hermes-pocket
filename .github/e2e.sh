@@ -287,7 +287,7 @@ for _attempt in 1 2 3; do
   timeout 90 adb shell uiautomator dump /sdcard/ui-settings.xml > /dev/null 2>&1 || true
   adb_ pull /sdcard/ui-settings.xml settings-0.xml > /dev/null 2>&1 || true
   grep -q 'content-desc="Settings"' settings-0.xml || { sleep 3; continue; }
-  GEAR=$(python3 .github/settings_tap.py settings-0.xml --package "$PKG" --debug)
+  GEAR=$(python3 .github/ui_tap.py settings-0.xml Settings --package "$PKG" --debug)
   [ -n "$GEAR" ] && break
   sleep 3
 done
@@ -337,6 +337,34 @@ adb_ exec-out screencap -p > "$SHOTS/03-settings.png" 2>/dev/null || true
 
 adb_ shell input keyevent KEYCODE_BACK > /dev/null 2>&1 || true
 sleep 2
+
+echo "== 9. device control: shizuku =="
+# Reached through Settings, the way a person gets there. Touch injection is
+# unreliable here, so a swallowed tap is reported, not faked.
+ROW=$(python3 .github/ui_tap.py settings.xml "Device control" --package "$PKG" --max-y 6000 --debug)
+if [ -n "$ROW" ]; then
+  adb_ shell input tap $ROW > /dev/null 2>&1 || true
+  sleep 4
+  timeout 90 adb shell uiautomator dump /sdcard/ui-dc.xml > /dev/null 2>&1 || true
+  adb_ pull /sdcard/ui-dc.xml dc.xml > /dev/null 2>&1 || true
+  if grep -q 'text="Shizuku"' dc.xml; then
+    pass "device control shows the Shizuku section"
+    grep -q 'text="Not installed"' dc.xml \
+      && pass "its state is honest: nothing is installed in this run" \
+      || fail "shizuku state is not reported"
+    grep -q 'text="Connect Shizuku"' dc.xml \
+      && pass "the connect action is on screen" \
+      || fail "no connect action"
+    adb_ exec-out screencap -p > "$SHOTS/04-device-control.png" 2>/dev/null || true
+    adb_ shell input keyevent KEYCODE_BACK > /dev/null 2>&1 || true
+    sleep 2
+  else
+    fail "the device-control screen did not open from its Settings row"
+  fi
+else
+  echo "WARN: could not resolve the Device control row"
+
+fi
 
 echo "== screenshots =="
 ls -la "$SHOTS" || true
