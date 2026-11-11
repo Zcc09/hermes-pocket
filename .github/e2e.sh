@@ -148,7 +148,9 @@ echo "== 6. device control bridge =="
 
 
 adb_ shell am force-stop "$PKG" || true
-timeout 120 adb shell am start -W -n "$PKG/.MainActivity" -e server "$FIXTURE" -e bridge 1 > /dev/null || fail "am start with bridge hook"
+START_LOG=$(timeout 120 adb shell am start -W -n "$PKG/.MainActivity" -e server "$FIXTURE" -e bridge 1 2>&1)
+echo "$START_LOG"
+echo "$START_LOG" | grep -q "Error" && fail "am start reported an error: $START_LOG" || true
 sleep 8
 
 BRIDGE_PORT=8737
@@ -164,6 +166,15 @@ for i in $(seq 1 10); do
   sleep 2
 done
 [ "$up" -eq 1 ] && pass "bridge answers on :$HOST_PORT" || fail "bridge never answered on :$HOST_PORT"
+
+if [ "$up" -ne 1 ]; then
+  echo "--- why the bridge is not answering ---"
+  adb_ shell ps -A | grep -i hermespocket || echo "no app process"
+  adb_ shell dumpsys activity services "$PKG" 2>/dev/null | head -30 || true
+  adb_ logcat -d -b crash -t 200 2>&1 | tail -40 || true
+  echo "--- end diagnostics ---"
+fi
+
 
 echo "prefs dir: $(adb_ shell run-as "$PKG" ls shared_prefs 2>&1 | tr -d "\015")"
 PREFS=$(adb_ shell run-as "$PKG" cat shared_prefs/hermes-pocket-bridge.xml 2>/dev/null | tr -d "\015")

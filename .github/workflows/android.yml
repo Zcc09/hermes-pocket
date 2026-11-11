@@ -143,8 +143,9 @@ jobs:
         if: always()
         run: |
           adb devices || true
-          timeout 120 adb logcat -d -b all -t 40000 > logcat-full.txt 2>&1 || true
-          wc -l logcat-full.txt || true
+          adb logcat -d -v threadtime > logcat-full.txt 2>&1 || true
+          adb logcat -d -b crash > logcat-crash.txt 2>&1 || true
+          wc -l logcat-full.txt logcat-crash.txt || true
           ls -la logcat-full.txt 2>/dev/null || true
 
       - uses: actions/upload-artifact@v7
@@ -153,6 +154,7 @@ jobs:
           name: e2e-evidence
           path: |
             logcat-full.txt
+            logcat-crash.txt
             e2e-*.txt
             settings*.xml
             screenshots/*.png
