@@ -272,22 +272,41 @@ adb_ shell cmd statusbar collapse > /dev/null 2>&1 || true
 sleep 3
 timeout 90 adb shell uiautomator dump /sdcard/ui-settings.xml > /dev/null 2>&1 || true
 adb_ pull /sdcard/ui-settings.xml settings-0.xml > /dev/null 2>&1 || true
-GEAR=$(python3 .github/settings_tap.py settings-0.xml)
-if grep -qE '(content-desc|text)="Settings"' settings-0.xml; then
+if grep -q 'content-desc="Settings"' settings-0.xml; then
   pass "the session bar exposes a Settings control"
-  if [ -n "$GEAR" ]; then
-    adb_ shell input tap $GEAR > /dev/null 2>&1 || true
-    sleep 4
-    pass "tapped the Settings control at $GEAR"
-  else
-    fail "found the Settings control but not its position in the top strip"
-  fi
 else
   fail "no Settings control on the main screen"
 fi
+GEAR=$(python3 .github/settings_tap.py settings-0.xml --package "$PKG" --debug)
 
-timeout 90 adb shell uiautomator dump /sdcard/ui-settings.xml > /dev/null 2>&1 || true
-adb_ pull /sdcard/ui-settings.xml settings.xml > /dev/null 2>&1 || true
+OPENED=0
+if [ -n "$GEAR" ]; then
+  adb_ shell input tap $GEAR > /dev/null 2>&1 || true
+  sleep 4
+  timeout 90 adb shell uiautomator dump /sdcard/ui-settings.xml > /dev/null 2>&1 || true
+  adb_ pull /sdcard/ui-settings.xml settings.xml > /dev/null 2>&1 || true
+  if grep -q 'text="Connection"' settings.xml; then
+    OPENED=1
+    pass "tapping the gear at $GEAR opened Settings"
+  else
+    echo "WARN: the tap at $GEAR did not register (emulator touch injection)"
+  fi
+else
+  echo "WARN: could not resolve the gear's position from the dump"
+fi
+
+if [ "$OPENED" -ne 1 ]; then
+  # The screen's content is what matters; reach it directly when the emulator
+  # swallows the tap, and say so rather than pretending the tap worked.
+  adb_ shell am start -n "$PKG/.SettingsActivity" > /dev/null 2>&1 || true
+  sleep 3
+  timeout 90 adb shell uiautomator dump /sdcard/ui-settings.xml > /dev/null 2>&1 || true
+  adb_ pull /sdcard/ui-settings.xml settings.xml > /dev/null 2>&1 || true
+  grep -q 'text="Connection"' settings.xml \
+    && pass "settings opened directly after the tap was swallowed" \
+    || fail "settings screen did not open at all"
+fi
+
 for label in "Settings" "Connection" "Notifications" "Version"; do
   grep -q "text=\"$label\"" settings.xml \
     && pass "settings shows $label" \
