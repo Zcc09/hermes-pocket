@@ -352,36 +352,30 @@ adb_ shell input keyevent KEYCODE_BACK > /dev/null 2>&1 || true
 sleep 2
 
 echo "== 9. device control: shizuku =="
-# Reached through Settings, the way a person gets there. Touch injection is
-# unreliable here, so a swallowed tap is reported, not faked.
-ROW=$(python3 .github/ui_tap.py settings.xml "Device control" --package "$PKG" --max-y 6000 --debug)
-if [ -n "$ROW" ]; then
-  adb_ shell input tap $ROW > /dev/null 2>&1 || true
-  sleep 4
-  timeout 90 adb shell uiautomator dump /sdcard/ui-dc.xml > /dev/null 2>&1 || true
-  adb_ pull /sdcard/ui-dc.xml dc.xml > /dev/null 2>&1 || true
-  if grep -q 'text="Shizuku"' dc.xml; then
-    pass "device control shows the Shizuku section"
-    grep -q 'text="Not installed"' dc.xml \
-      && pass "its state is honest: nothing is installed in this run" \
-      || fail "shizuku state is not reported"
-    grep -q 'text="Connect Shizuku"' dc.xml \
-      && pass "the connect action is on screen" \
-      || fail "no connect action"
-    adb_ exec-out screencap -p > "$SHOTS/04-device-control.png" 2>/dev/null || true
-    adb_ shell input keyevent KEYCODE_BACK > /dev/null 2>&1 || true
-    sleep 2
-  else
-    if adb_ shell ps -A | grep -q hermespocket; then
-      echo "WARN: the Settings row tap did not register (emulator touch injection)"
-    else
-      fail "the app process died opening device control"
-    fi
-  fi
+# Reached through the app's own test hook: device control stays unexported
+# because it displays the pairing token, so adb cannot launch it directly.
+adb_ shell am start -n "$PKG/.MainActivity" -e screen device-control > /dev/null 2>&1 || true
+sleep 4
+timeout 90 adb shell uiautomator dump /sdcard/ui-dc.xml > /dev/null 2>&1 || true
+adb_ pull /sdcard/ui-dc.xml dc.xml > /dev/null 2>&1 || true
+if grep -q 'text="Shizuku"' dc.xml; then
+  pass "device control shows the Shizuku section"
+  grep -q 'text="Not installed"' dc.xml \
+    && pass "its state is honest: nothing is installed in this run" \
+    || fail "shizuku state is not reported"
+  grep -q 'text="Connect Shizuku"' dc.xml \
+    && pass "the connect action is on screen" \
+    || fail "no connect action"
+  adb_ exec-out screencap -p > "$SHOTS/04-device-control.png" 2>/dev/null || true
 else
-  echo "WARN: could not resolve the Device control row"
-
+  if adb_ shell ps -A | grep -q hermespocket; then
+    fail "device control did not render (app alive, screen missing)"
+  else
+    fail "the app process died opening device control"
+  fi
 fi
+adb_ shell input keyevent KEYCODE_BACK > /dev/null 2>&1 || true
+sleep 2
 
 echo "== screenshots =="
 ls -la "$SHOTS" || true

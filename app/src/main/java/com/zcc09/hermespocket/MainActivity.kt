@@ -78,6 +78,9 @@ class MainActivity : ComponentActivity() {
 
         /** Test hook: `-e bridge 1` starts device control so CI can drive the bridge. */
         private const val EXTRA_BRIDGE = "bridge"
+
+        /** Test hook: `-e screen device-control` opens that screen (it is not exported). */
+        private const val EXTRA_SCREEN = "screen"
     }
 
     private lateinit var webView: WebView
@@ -151,6 +154,12 @@ class MainActivity : ComponentActivity() {
         if (intent?.getStringExtra(EXTRA_BRIDGE) == "1") {
             DeviceControlService.start(this)
             Log.i(TAG, "BRIDGE started by test hook")
+        }
+
+        if (intent?.getStringExtra(EXTRA_SCREEN) == "device-control") {
+            // Device control shows the pairing token, so it stays unexported and
+            // this hook is how the smoke suite reaches it.
+            startActivity(Intent(this, DeviceControlActivity::class.java))
         }
 
         renderHost()
