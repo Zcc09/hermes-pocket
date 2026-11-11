@@ -238,6 +238,10 @@ echo "$APPS_JSON" | grep -q '"apps"' && pass "app list returned" || fail "app li
 echo "== 7. reply notifications =="
 # The user grants this in Settings; on the emulator the equivalent is pm grant.
 adb_ shell pm grant "$PKG" android.permission.POST_NOTIFICATIONS > /dev/null 2>&1 || true
+# A permission change can restart the app process; bring it back to the front or
+# the visibility suppression has nothing to suppress and this tests nothing.
+adb_ shell am start -n "$PKG/.MainActivity" > /dev/null 2>&1 || true
+sleep 3
 FG_JSON=$(curl -s -m 8 -H "$auth" -H 'Content-Type: application/json' \
   -d '{"title":"Hermes","body":"foreground probe"}' "$BASE/v1/notify")
 echo "$FG_JSON"
@@ -269,6 +273,7 @@ echo "== 8. settings =="
 # notification from step 7 can still be a heads-up banner over the top of the
 # screen, so collapse the shade first or the tap lands on the banner.
 adb_ shell cmd statusbar collapse > /dev/null 2>&1 || true
+adb_ shell am start -n "$PKG/.MainActivity" > /dev/null 2>&1 || true
 sleep 3
 timeout 90 adb shell uiautomator dump /sdcard/ui-settings.xml > /dev/null 2>&1 || true
 adb_ pull /sdcard/ui-settings.xml settings-0.xml > /dev/null 2>&1 || true
