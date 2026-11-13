@@ -246,6 +246,13 @@ two things on a phone will still stop it:
   opening the app re-arms it if anything else killed it. `BootReceiver` does the
   first, the launcher does the second.
 
+Measured on a Magic V3: `am kill` takes the bridge down and **it stays down**
+unless Android is allowed to start a foreground service from the background.
+That permission is the battery exemption above; with it, the sticky service and
+`WatchdogReceiver` (a 15-minute inexact alarm) bring the bridge back on their own.
+Without it, opening the app is the only reliable restart — which is why the
+Settings row exists instead of assuming the service survives.
+
 ## Notifications
 
 The same bridge can raise a notification, which is how a reply reaches you when
