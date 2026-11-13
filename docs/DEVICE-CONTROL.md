@@ -233,6 +233,19 @@ The agent on your computer has to be on the same network as the phone. A
 Hermes instance running on a server elsewhere, or on a VPN that does not route
 to the phone's subnet, cannot reach `192.168.x.x`.
 
+## Staying on in the background
+
+The bridge is a foreground service, so it survives the app being swiped away, but
+two things on a phone will still stop it:
+
+- **Android's battery optimisation** may kill it while the screen is off. Settings →
+  *Keep running in the background* asks for the per-app exemption. On Honor/MagicOS
+  also allow *Settings → Apps → Hermes Pocket → App launch → auto-launch*; that
+  switch is separate from the Android exemption and Honor enforces it on its own.
+- **A reboot.** The service comes back by itself when the switch was left on, and
+  opening the app re-arms it if anything else killed it. `BootReceiver` does the
+  first, the launcher does the second.
+
 ## Notifications
 
 The same bridge can raise a notification, which is how a reply reaches you when

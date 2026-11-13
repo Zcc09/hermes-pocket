@@ -28,6 +28,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import com.zcc09.hermespocket.bridge.BridgeConfig
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -154,12 +155,16 @@ class MainActivity : ComponentActivity() {
         if (intent?.getStringExtra(EXTRA_BRIDGE) == "1") {
             DeviceControlService.start(this)
             Log.i(TAG, "BRIDGE started by test hook")
+        } else if (BridgeConfig(this).enabled && !DeviceControlService.isServing()) {
+            // The switch is the user's standing instruction; opening the app
+            // re-arms a bridge the system had killed in the background.
+            DeviceControlService.start(this)
+            Log.i(TAG, "BRIDGE re-armed on open")
         }
 
         openRequestedScreen(intent)
 
         renderHost()
-        widenSettingsTarget()
         Updater(this).start()
     }
 
@@ -426,6 +431,7 @@ class MainActivity : ComponentActivity() {
         findViewById<View>(R.id.error_change_server).setOnClickListener {
             showSetup(serverUrl)
         }
+        findViewById<View>(R.id.button_reload).setOnClickListener { reloadPage() }
         findViewById<View>(R.id.button_settings).setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
@@ -531,10 +537,8 @@ class MainActivity : ComponentActivity() {
     // endregion
 
     private fun showSessionMenu() {
-        // Settings owns the server, the sign-out and device control; the menu
-        // keeps only what belongs to the page in front of you.
+        // Reload is a button in the session bar, so the menu does not repeat it.
         val items = arrayOf(
-            getString(R.string.menu_reload),
             getString(R.string.menu_settings),
             getString(R.string.open_in_browser)
         )
@@ -542,8 +546,7 @@ class MainActivity : ComponentActivity() {
             .setTitle(R.string.session_title)
             .setItems(items) { _, which ->
                 when (which) {
-                    0 -> reloadPage()
-                    1 -> startActivity(Intent(this, SettingsActivity::class.java))
+                    0 -> startActivity(Intent(this, SettingsActivity::class.java))
                     else -> openInBrowser(currentUrl())
                 }
             }
@@ -630,22 +633,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * The gear is 32dp wide inside a 28dp bar; a TouchDelegate widens it to the
-     * 48dp target a thumb expects without growing the chrome.
-     */
-    private fun widenSettingsTarget() {
-        val bar = findViewById<View>(R.id.session_bar)
-        val gear = findViewById<View>(R.id.button_settings)
-        bar.post {
-            val rect = android.graphics.Rect()
-            gear.getHitRect(rect)
-            val dx = (48 - rect.width()).coerceAtLeast(0) / 2
-            val dy = (48 - rect.height()).coerceAtLeast(0) / 2
-            rect.inset(-dx, -dy)
-            bar.touchDelegate = android.view.TouchDelegate(rect, gear)
-        }
-    }
 
     private fun hideErrorPanel() {
         errorPanel.visibility = View.GONE

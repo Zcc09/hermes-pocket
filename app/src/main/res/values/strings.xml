@@ -11,9 +11,16 @@
     <string name="no_browser">No app on this device can open web links</string>
     <string name="unknown_error">Unknown error</string>
     <string name="session_title">Menu</string>
-    <string name="menu_reload">Reload page</string>
+    <string name="reload_page">Reload</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_change_server">Change server</string>
+    <string name="settings_battery_label">Keep running in the background</string>
+    <string name="settings_battery_unknown">Checking…</string>
+    <string name="settings_battery_allowed">Allowed by Android</string>
+    <string name="settings_battery_blocked">Not allowed — Android may stop it</string>
+    <string name="settings_battery_allow">Allow</string>
+    <string name="settings_battery_granted">Background running allowed</string>
+    <string name="settings_battery_hint">Android stops background apps to save power, and Honor phones add their own rule: in Settings → Apps → Hermes Pocket → App launch, allow auto-launch. With both allowed the bridge stays reachable with the app closed.</string>
     <string name="settings_link_from_device">Reply notifications and the server address are in Settings</string>
     <string name="shortcut_reload">Reload page</string>
     <string name="shortcut_device_control">Device control</string>

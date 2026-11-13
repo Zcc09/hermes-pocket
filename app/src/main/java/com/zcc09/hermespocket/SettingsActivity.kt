@@ -66,6 +66,7 @@ class SettingsActivity : ComponentActivity() {
             startActivity(Intent(this, DeviceControlActivity::class.java))
         }
         findViewById<View>(R.id.row_test_notify).setOnClickListener { sendTestNotification() }
+        findViewById<View>(R.id.row_battery).setOnClickListener { requestBackgroundPermission() }
         findViewById<View>(R.id.row_update).setOnClickListener {
             Toast.makeText(this, R.string.settings_checking_updates, Toast.LENGTH_SHORT).show()
             Updater(this).checkNow()
@@ -105,6 +106,13 @@ class SettingsActivity : ComponentActivity() {
             Notifier.canPost(this) -> getString(R.string.settings_permission_allowed)
             else -> getString(R.string.settings_permission_blocked)
         }
+
+        findViewById<TextView>(R.id.text_battery).text =
+            if (ignoringBatteryOptimizations()) {
+                getString(R.string.settings_battery_allowed)
+            } else {
+                getString(R.string.settings_battery_blocked)
+            }
 
         findViewById<TextView>(R.id.text_device).text =
             if (!config.enabled) {
@@ -221,6 +229,34 @@ class SettingsActivity : ComponentActivity() {
                 finish()
             }
             .show()
+    }
+
+    private fun ignoringBatteryOptimizations(): Boolean = runCatching {
+        getSystemService(android.os.PowerManager::class.java)
+            .isIgnoringBatteryOptimizations(packageName)
+    }.getOrDefault(false)
+
+    /**
+     * Ask Android to leave this app alone. Without it the system is free to kill
+     * the bridge while the screen is off, which looks exactly like "device
+     * control stopped working". The request is per-app and reversible in system
+     * settings; Honor phones add a second switch, named in the row's footer.
+     */
+    private fun requestBackgroundPermission() {
+        if (ignoringBatteryOptimizations()) {
+            Toast.makeText(this, R.string.settings_battery_granted, Toast.LENGTH_SHORT).show()
+            render()
+            return
+        }
+        val direct = Intent(
+            android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+            android.net.Uri.parse("package:$packageName"),
+        )
+        val result = runCatching { startActivity(direct) }
+        if (result.isFailure) {
+            runCatching { startActivity(Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)) }
+        }
+        Log.i(TAG, "SETTINGS battery exemption requested")
     }
 
     private fun sendTestNotification() {

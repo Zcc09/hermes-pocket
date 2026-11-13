@@ -229,6 +229,40 @@
                     android:contentDescription="@string/shortcut_device_control"
                     android:src="@drawable/ic_chevron" />
             </LinearLayout>
+
+            <View style="@style/SettingsDivider" />
+
+            <LinearLayout
+                android:id="@+id/row_battery"
+                style="@style/SettingsRow">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/SettingsLabel"
+                        android:text="@string/settings_battery_label" />
+
+                    <TextView
+                        android:id="@+id/text_battery"
+                        style="@style/SettingsValue"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/settings_battery_unknown" />
+                </LinearLayout>
+
+                <TextView
+                    style="@style/SettingsAction"
+                    android:text="@string/settings_battery_allow" />
+            </LinearLayout>
+
+            <View style="@style/SettingsDivider" />
+
+            <TextView
+                style="@style/SettingsFooter"
+                android:text="@string/settings_battery_hint" />
         </LinearLayout>
 
         <!-- About -->
