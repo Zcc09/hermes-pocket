@@ -70,6 +70,16 @@
                 android:value="Local device-control bridge for the owner's own agent on their own network" />
         </service>
 
+        <!-- Re-arms the bridge if the system kills it in the background. -->
+        <receiver
+            android:name=".WatchdogReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.zcc09.hermespocket.WATCHDOG" />
+            </intent-filter>
+        </receiver>
+
         <!-- The bridge the user left on comes back after a reboot. -->
         <receiver
             android:name=".BootReceiver"

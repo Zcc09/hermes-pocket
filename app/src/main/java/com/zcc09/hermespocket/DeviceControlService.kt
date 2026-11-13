@@ -65,6 +65,7 @@ class DeviceControlService : Service() {
                 bridge?.stop()
                 bridge = null
                 config.enabled = false
+                WatchdogReceiver.cancel(this)
                 Log.i(TAG, "BRIDGE service stopped by request")
                 stopForeground(STOP_FOREGROUND_REMOVE)
                 stopSelf()
@@ -77,6 +78,7 @@ class DeviceControlService : Service() {
                     Log.w(TAG, "BRIDGE could not bind port ${config.port}")
                 }
                 config.enabled = true
+                WatchdogReceiver.schedule(this)
             }
         }
         return START_STICKY
