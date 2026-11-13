@@ -341,12 +341,20 @@ if [ "$OPENED" -ne 1 ]; then
     || fail "settings screen did not open even when started directly"
 fi
 
+# The screen grew past the fold (the background row), so read it in two passes
+# and assert against both dumps joined.
+adb_ shell input swipe 540 1700 540 600 250 > /dev/null 2>&1 || true
+sleep 1
+timeout 90 adb shell uiautomator dump /sdcard/ui-settings2.xml > /dev/null 2>&1 || true
+adb_ pull /sdcard/ui-settings2.xml settings2.xml > /dev/null 2>&1 || true
+cat settings.xml settings2.xml > settings-all.xml 2>/dev/null || cp settings.xml settings-all.xml
+
 for label in "Settings" "Connection" "Notifications" "Version"; do
-  grep -q "text=\"$label\"" settings.xml \
+  grep -q "text=\"$label\"" settings-all.xml \
     && pass "settings shows $label" \
     || fail "settings is missing $label"
 done
-grep -q 'text="http' settings.xml \
+grep -q 'text="http' settings-all.xml \
   && pass "settings shows the server address it is pointed at" \
   || fail "settings does not show the server address"
 adb_ exec-out screencap -p > "$SHOTS/03-settings.png" 2>/dev/null || true
